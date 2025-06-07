@@ -12,14 +12,32 @@
 
 5. Insert Micro SD Card for use with Raspberry Pi Imager
 
-6. In Raspberry Pi Imager's Main Page, Select:
-   * "Raspberry Pi Device" -> "RASPBERRY PI 4"
-   * "Operating System" -> "RASPBERRY PI OS LITE (64-BIT)"
-   * "Storage" -> Micro SD Card for use with Raspberry Pi Imager
+6. In Raspberry Pi Imager's Main Page, specify:
+   * `RASPBERRY PI 4` for "Raspberry Pi Device"
+   * `RASPBERRY PI OS LITE (64-BIT)` for "Operating System"
+   * `Micro SD Card for use with Raspberry Pi Imager` for "Storage"
   
 ![Raspberry Pi Imager Top Level](images/Raspberry_Pi_Imager_1.png)
 
 7. Click "Next" in Raspberry Pi Imager
+
+8. The "OS Customisation" Window comes up.  Make the following entries:
+   * "Set hostname:" to `kgpft1`
+   * "Set username and password"
+      * "Username:" to `biqu`
+      * "Password:" to `biqu`
+   * Deselect "Configure wireless LAN"
+   * "Set locale settings"
+      * "Time zone:" to `America/Toronto`
+      * "Keyboard layout:" to `us`
+
+![Raspberry Pi Imager Specifying User and Network Parameters](images/Raspberry_Pi_Imager_2.png)
+
+9. Click on `SAVE` in the "OS Customisation" Window and then click `Yes` to "apply OS customisation settings?"
+
+10. Click on `Yes` to "Are you sure you want to continue?"
+
+11. Wait for Micro SD Card to be configured
 
 ## Functional Test Process
 
@@ -99,7 +117,14 @@
 
 * Show "FUNCTIONAL TEST START" Message
 
-* TEST01: Network Connections (Ping Internet Site to test Board Under Test's Ethernet Port using `sineosPING.sh`)
-* TEST02: Power Input Level (Check Input Power Level)
-* TEST03: MCU Temperature (Read MCU Temperature as MCU Presence Check)
-* TEST04: Toolhead MCU Temperature (Toolhead Presence Check)
+* `TEST01:` Network Connections (Ping Internet Site to test Board Under Test's Ethernet Port using `sineosPING.sh`)
+* `TEST02:` Power Input (`VINMON`) Level (Check Input Power Level)
+* `TEST03:` MCU Temperature (Read MCU Temperature as MCU Presence Check)
+* `TEST04:` Toolhead MCU Temperature (Toolhead Presence Check)
+* `TEST05:` `heater0` temp < 30C (`heater0` thermistor Presence Check)
+* `TEST06:` `heater1` temp < 30C (`heater1` thermistor Presence Check)
+* `TEST07:` ADXL345 Presence Check
+* `TEST08:` BLTouch Presence Check (Set Probe Position)
+* `TEST09:` `neopixel0` Presence Check (User Operator must confirm operation)
+* `TEST10:` `neopixel1` Presence Check (User Operator must confirm operation)
+* 
