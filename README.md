@@ -1,6 +1,25 @@
 # KGP 4x2209 FunctionalTest
 
+![KGP 4x2209 Image](images/KGP_4x2209_3D.png)
+
 ## Raspberry Pi CM4 Configuration Instructions
+
+1. Assume Raspberry Pi CM4 as the KGP 4x2209 Klipper "Host"
+   
+3. Use 64GB+ Micro SD Card for loading OS for the Raspberry Pi
+
+4. Start up the Raspberry Pi Imager
+
+5. Insert Micro SD Card for use with Raspberry Pi Imager
+
+6. In Raspberry Pi Imager's Main Page, Select:
+   * "Raspberry Pi Device" -> "RASPBERRY PI 4"
+   * "Operating System" -> "RASPBERRY PI OS LITE (64-BIT)"
+   * "Storage" -> Micro SD Card for use with Raspberry Pi Imager
+  
+![Raspberry Pi Imager Top Level](images/Raspberry_Pi_Imager_1.png)
+
+7. Click "Next" in Raspberry Pi Imager
 
 ## Functional Test Process
 
