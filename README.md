@@ -4,6 +4,8 @@
 
 ## Raspberry Pi CM4 Configuration Instructions
 
+### Setup Raspberry Pi CM4 Operating System
+
 1. Assume Raspberry Pi CM4 as the KGP 4x2209 Klipper "Host"
    
 3. Use 64GB+ Micro SD Card for loading OS for the Raspberry Pi
@@ -59,8 +61,43 @@
 
 18. Enter `sudo apt upgrade -y`
 
-19. 
+### Enable CANBus Operation
 
+* Following instructions found at: [Estoterical CANBus Guide](https://canbus.esoterical.online/Getting_Started.html)
+
+19. `sudo systemctl enable systemd-networkd`
+
+20. `sudo systemctl start systemd-networkd`
+
+21. Check to see that networkd is operating using the command `systemctl | grep systemd-networkd`
+
+![SSH of the Previous Three Commands](images/networkd_Running.png)
+
+22. `sudo systemctl disable systemd-networkd-wait-online.service`
+
+23. `echo -e 'SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"' | sudo tee /etc/udev/rules.d/10-can.rules > /dev/null`
+
+24. Check to see that the CAN rules were applied correctly using: `cat /etc/udev/rules.d/10-can.rules`
+
+![CAN Rules Check Response](images/CAN_rules_check.png)
+
+25. `echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\nRestartSec=0.1s\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null`
+
+26. Check to see that the CAN Network Parameters were set correctly using: `cat /etc/systemd/network/25-can.network`
+
+![CAN Network Check Response](images/CAN_network_check.png)
+
+27. `sudo reboot now`
+
+28. Wait 2 minutes for Raspberry Pi CM4 to reboot
+
+29. `ssh biqu@kgpft1` and enter password `biqu` when prompted
+
+### Install Raspberry Pi GPIO Drivers
+
+* Following instructions found at: [Pi My Life Up/raspberry-pi-gpio](https://pimylifeup.com/raspberry-pi-gpio/)
+
+30. `
 
 ## Functional Test Process
 
@@ -141,13 +178,44 @@
 * Show "FUNCTIONAL TEST START" Message
 
 * `TEST01:` Network Connections (Ping Internet Site to test Board Under Test's Ethernet Port using `sineosPING.sh`)
-* `TEST02:` Power Input (`VINMON`) Level (Check Input Power Level)
-* `TEST03:` MCU Temperature (Read MCU Temperature as MCU Presence Check)
-* `TEST04:` Toolhead MCU Temperature (Toolhead Presence Check)
-* `TEST05:` `heater0` temp < 30C (`heater0` thermistor Presence Check)
-* `TEST06:` `heater1` temp < 30C (`heater1` thermistor Presence Check)
-* `TEST07:` ADXL345 Presence Check
-* `TEST08:` BLTouch Presence Check (Set Probe Position)
-* `TEST09:` `neopixel0` Presence Check (User Operator must confirm operation)
-* `TEST10:` `neopixel1` Presence Check (User Operator must confirm operation)
-* 
+* `TEST02:` Read Power Input (`VINMON`) Level (Check Input Power Level)
+* `TEST03:` Read MCU Temperature (MCU Presence Check)
+* `TEST04:` Read Toolhead MCU Temperature (Toolhead Presence Check)
+* `TEST05:` Ensure (`HEATER0` temp < 30C) && (`HEATER0` temp > 0C) (`HEATER0` thermistor Presence Check and at temperature appropriate for `HEATER0` functional test)
+* `TEST06:` Ensure (`HEATER1` temp < 30C) && (`HEATER1` temp > 0C) (`HEATER1` thermistor Presence Check and at temperature appropriate for `HEATER1` functional test)
+* `TEST07:` Set `HEATER0` to 40C (This is an operation that cannot pass or fail but given the label "TEST" so it can use the standard test macro formatting)
+* `TEST08:` Set `HEATER1` to 40C (This is an operation that cannot pass or fail but given the label "TEST" so it can use the standard test macro formatting)
+* `TEST09:` ADXL345 Presence Check
+* `TEST10:` BLTouch Presence Check (Also Set Probe Position and check probe status)
+* `TEST11:` `NEOPIXEL0` Presence Check (User Operator must confirm `NEOPIXEL0` has a red output.  `NEOPIXEL0` is turned off after test)
+* `TEST12:` `NEOPIXEL1` Presence Check (User Operator must confirm `NEOPIXEL1` has a red output.  `NEOPIXEL1` is turned off after test)
+* `TEST13:` `DSENSOR0` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
+* `TEST14:` `DSENSOR1` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
+* `TEST15:` `DSENSOR2` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
+* `TEST16:` `DSENSOR3` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
+* `TEST17:` `DSENSOR4` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
+* `TEST18:` 'FAN0' Operations Check (Operator to confirm Blue LED on Board Under Test is lit and LED strip is lit.  After confirmation `DSENSOR1` is no longer driven so that Blue LED and LED strip are off)
+* `TEST19:` 'FAN1' Operations Check (Operator to confirm Blue LED on Board Under Test is lit and LED strip is lit.  After confirmation `DSENSOR1` is no longer driven so that Blue LED and LED strip are off)
+* `TEST20:` 'FAN2' Operations Check (Operator to confirm Blue LED on Board Under Test is lit and LED strip is lit.  After confirmation `DSENSOR2` is no longer driven so that Blue LED and LED strip are off)
+* `TEST21:` 'FAN3' Operations Check (Operator to confirm Blue LED on Board Under Test is lit and LED strip is lit.  After confirmation `DSENSOR3` is no longer driven so that Blue LED and LED strip are off)
+* `TEST22:` 'G28 X` Test to check stepper movement and sensorless homing operation 
+* `TEST23:` 'G28 Y` Test to check stepper movement and sensorless homing operation
+* `TEST24:` 'G28 Z` Test to check stepper movement and sensorless homing operation
+* `TEST25:` Functional Test of Inductive Sensor on Y-Axis stepper 
+* `TEST26:` Functional Test of BLTouch on Z-Axis stepper
+* `TEST27:` Ensure 'HEATER0` > 30C (When complete, set `HEATER0` to 0C)
+* `TEST28:` Ensure 'HEATER1` > 30C (When complete, set `HEATER1` to 0C)
+
+* Show "TEST COMPLETE" Message
+* `NEOPIXEL0` and `NEOPIXEL1` set to output blue light
+
+* Show "FIRMWARE SEALING" Message
+
+* `sudo service klipper stop`
+* sleep 2s
+* Cycle Reset 2x (Enable Katapult in MCU - Assume that this will work and there's no need to check it's active)
+* sleep 2s
+* load `nada.bin`
+* sleep 5s
+
+* `sudo shutdown now`
