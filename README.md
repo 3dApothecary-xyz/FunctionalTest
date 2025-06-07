@@ -39,6 +39,29 @@
 
 11. Wait for Micro SD Card to be configured
 
+12. When finished, install the Micro SD Card into a `KGP 4x2209` board which has a Raspberry Pi CM4 installed
+
+13. Connect the `KGP 4x2209` to an Ethernet internet connection
+   
+14. Apply power (ideally 24V) to the `KGP 4x2209`
+
+15. Wait 5 minutes for first boot of the Raspberry Pi CM4
+
+16. Using a computer which is connected to the same network as the Ethernet internet connection used by the `KGP 4x2209`:
+    * Start up a terminal window (No need for PuTTY)
+    * SSH into the board using `ssh biqu@kgpft1`
+    * Enter `yes` if the question appears: "The authenticity of host 'kgpft1 ... Are you sure you want to continue connecting (yes/no/[fingerprint])?"
+    * Enter the password `biqu`
+      
+![First Functional System Test SSH Login](images/First_FT_System_Login.png)
+
+17. Enter `sudo apt update`
+
+18. Enter `sudo apt upgrade -y`
+
+19. 
+
+
 ## Functional Test Process
 
 * `sudo service klipper stop`
