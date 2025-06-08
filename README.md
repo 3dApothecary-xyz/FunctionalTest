@@ -137,7 +137,39 @@
     * Select `1) [Klipper]` to Install Klipper on the Raspberry Pi CM4.  Select default options when prompted
     * Select `2) [Moonraker]` to Install Moonraker on the Raspberry Pi CM4.  Select default options when prompted
     * Select `3) [Mainsail]` to Install Mainsail on the Raspberry Pi CM4.  Select default options when prompted
-  
+    * Select `B << Back` to return to the main menu
+    * Select `Q) Quit` to exit KIAUH
+
+37. Check Klipper installation by loading the Mainsail webpage: `http://kgpft1`
+
+![kgpft1 Mainsail Webpage](images/Mainsail_Webpage.png)
+
+### Load Numpy for ADXL345 Testing
+
+* Following instructions found at: [Measuring Resonances: Software Installation](https://www.klipper3d.org/Measuring_Resonances.html#software-installation)
+
+38. `sudo apt install python3-numpy python3-matplotlib libatlas-base-dev libopenblas-dev -y`
+
+39. `~/klippy-env/bin/pip install -v "numpy<1.26"`
+
+40. Check Numpy installation using: `~/klippy-env/bin/python -c 'import numpy;'` - Result should be a simple return:
+
+![Numpy Check - Simple Return](images/Numpy_Check.png)
+
+### Load Katapult
+
+* Following instructions found at: [GitHub Katapult Repository](https://github.com/Arksine/katapult)
+
+41. `git clone https://github.com/Arksine/katapult`
+
+### Make Firmware Images
+
+### Flash Toolhead
+
+### Make Board Under Test Firmware Images
+
+### Test Micro SD Card Image with KGP 4x2209 & CANBus Toolhead Controller
+
 ## Functional Test Process
 
 * `sudo service klipper stop`
