@@ -93,12 +93,51 @@
 
 29. `ssh biqu@kgpft1` and enter password `biqu` when prompted
 
-### Install Raspberry Pi GPIO Drivers
+### Download Necessary Files from GitHub
 
 * Following instructions found at: [Pi My Life Up/raspberry-pi-gpio](https://pimylifeup.com/raspberry-pi-gpio/)
 
-30. `
+30. `sudo apt-get update && sudo apt-get install git -y`
 
+### Enable Raspberry Pi CM4 GPIO Operation
+
+* Following instructions found at: [Pi My Life Up/raspberry-pi-gpio](https://pimylifeup.com/raspberry-pi-gpio/)
+
+31. Dowload python utilities:
+    * `mkdir python`
+    * `cd python`
+    * `wget -O cycle38.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycle38.py?raw=true`
+    * `wget -O cycleRESET.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycleRESET.py?raw=true`
+    * `wget -O enableDFU.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/enableDFU.py?raw=true`
+    * `wget -O enableKatapult.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/enableKatapult.py?raw=true`
+    * `cd ~`
+      
+33. Test python operation with: `python python/cycle38.py`
+    * Check Pin 38 on KGP 4x2209's Raspberry Pi 40Pin Connector with a DMM: Pin should be cycling between 0V and 3.3V every 2 Seconds
+
+### Load Klipper using KIAUH
+
+* Following instructions found at: [GitHub KIAUH Repository](https://github.com/dw-0/kiauh)
+
+34. `git clone https://github.com/dw-0/kiauh.git`
+
+35. `./kiauh/kiauh.sh`
+    * If asked to try out KIAUH 6 enter `3` which is `3) Yes, remember my choice for next time`
+    * Select `2) [Update]`
+    * if Option `9) System` does NOT say `No upgrades available.` then:
+    *       Select `9) System`
+    *       Wait for System Updates to complete
+    *       Select `B) << Back` to exit Update Panel
+    *       Select `Q) Quit` to leave KIAUH
+    *       `./kiauh/kiauh.sh` to restart KIAUH
+    *       Select `2)[Update]` to return to KIAUH Update Screen
+   
+36. Select `B) << Back` to exit Update Panel
+    * Select `1) [Install]` to go to Klipper Installation Panel
+    * Select `1) [Klipper]` to Install Klipper on the Raspberry Pi CM4.  Select default options when prompted
+    * Select `2) [Moonraker]` to Install Moonraker on the Raspberry Pi CM4.  Select default options when prompted
+    * Select `3) [Mainsail]` to Install Mainsail on the Raspberry Pi CM4.  Select default options when prompted
+  
 ## Functional Test Process
 
 * `sudo service klipper stop`
@@ -119,43 +158,35 @@
 *             loadFlag = 3
 *         else
 *             ERROR - Unable to load firmware into Board Under Test's MCU
-*         endif
-*     endif
 
 *     if (loadFlag & 4)  //  Board will be in DFU Mode
 *         Flash `katapult.bin` using dfu-util
 *         sleep 1s
 *         Cycle Reset 2x (Enable Katapult in MCU)
 *         sleep 1s
-*     endif
 
 *     if NOT Katapult Active
 *         ERROR - Unable to load firmware into Board Under Test's MCU
-*     endif
 
 *     if (loadFlag & 2)  //  Flash DFU Enable in Option Bytes
 *         Flash `SKR_Mini_E3_V3_DFU.bin` using Katapult
 *         sleep 1s
 *         Cycle Reset 2x (Enable Katapult in MCU)
 *         sleep 1s
-*     endif
 
 *     if NOT Katapult Active
 *         ERROR - Unable to load firmware into Board Under Test's MCU
-*     endif
 
 *     if (loadFlag & 1)  //  Flash Klipper Firmware
 *         Flash `klipper.bin` using Katapult
 *         sleep 1s
 *         Cycle Reset 2x (Enable Katapult in MCU)
 *         sleep 1s
-*     endif
 
 * Show "KLIPPER START" Message
 
 *     if `mcu.cfg` exists
 *         erase `mcu.cfg`
-*     endif
 
 * Using `ls /dev/serial/by-id` Create `mcu.cfg`
 
@@ -170,10 +201,8 @@
 *         sleep 1s
 *         execute FIRMWARE_RESTART
 *         sleep 5s // **NOTE:** This needs to be time to understand how long is required for Klipper to come up
-*     endfor
 *     if 5 <= i
 *         ERROR - Klipper not coming up after MCU Flashed with Katapult, DFU Mode Enable, Klipper firmware
-*     endif
 
 * Show "FUNCTIONAL TEST START" Message
 
