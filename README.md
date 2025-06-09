@@ -2,6 +2,117 @@
 
 ![KGP 4x2209 Image](images/KGP_4x2209_3D.png)
 
+## Functional Test Process
+
+* `sudo service klipper stop`
+  
+* loadFlag = 7
+
+* Show "FIRMWARE LOAD" Message
+
+* sleep 5s
+
+* Enable DFU Mode on Board Under Test's MCU (Hold `BOOT0` high, cycle `RESET`)
+
+* sleep 2s
+
+*     if **NOT** in DFU Mode
+*         Cycle Reset 2x (Enable Katapult in MCU)
+*         if Katapult Active
+*             loadFlag = 3
+*         else
+*             ERROR - Unable to load firmware into Board Under Test's MCU
+
+*     if (loadFlag & 4)  //  Board will be in DFU Mode
+*         Flash `katapult.bin` using dfu-util
+*         sleep 1s
+*         Cycle Reset 2x (Enable Katapult in MCU)
+*         sleep 1s
+
+*     if NOT Katapult Active
+*         ERROR - Unable to load firmware into Board Under Test's MCU
+
+*     if (loadFlag & 2)  //  Flash DFU Enable in Option Bytes
+*         Flash `SKR_Mini_E3_V3_DFU.bin` using Katapult
+*         sleep 1s
+*         Cycle Reset 2x (Enable Katapult in MCU)
+*         sleep 1s
+
+*     if NOT Katapult Active
+*         ERROR - Unable to load firmware into Board Under Test's MCU
+
+*     if (loadFlag & 1)  //  Flash Klipper Firmware
+*         Flash `klipper.bin` using Katapult
+*         sleep 1s
+*         Cycle Reset 2x (Enable Katapult in MCU)
+*         sleep 1s
+
+* Show "KLIPPER START" Message
+
+*     if `mcu.cfg` exists
+*         erase `mcu.cfg`
+
+* Using `ls /dev/serial/by-id` Create `mcu.cfg`
+
+* `sudo service klipper start`
+
+* sleep 5s // **NOTE:** This needs to be timed to understand how long it takes for Klipper to come up
+
+*     for (i = 0; 5 > i; ++i)
+*         if klipper "READY"
+*             break
+*         endif
+*         sleep 1s
+*         execute FIRMWARE_RESTART
+*         sleep 5s // **NOTE:** This needs to be time to understand how long is required for Klipper to come up
+*     if 5 <= i
+*         ERROR - Klipper not coming up after MCU Flashed with Katapult, DFU Mode Enable, Klipper firmware
+
+* Show "FUNCTIONAL TEST START" Message
+
+* `TEST01:` Network Connections (Ping Internet Site to test Board Under Test's Ethernet Port using `sineosPING.sh`)
+* `TEST02:` Read Power Input (`VINMON`) Level (Check Input Power Level)
+* `TEST03:` Read MCU Temperature (MCU Presence Check)
+* `TEST04:` Read Toolhead MCU Temperature (Toolhead Presence Check)
+* `TEST05:` Ensure (`HEATER0` temp < 30C) && (`HEATER0` temp > 0C) (`HEATER0` thermistor Presence Check and at temperature appropriate for `HEATER0` functional test)
+* `TEST06:` Ensure (`HEATER1` temp < 30C) && (`HEATER1` temp > 0C) (`HEATER1` thermistor Presence Check and at temperature appropriate for `HEATER1` functional test)
+* `TEST07:` Set `HEATER0` to 40C (This is an operation that cannot pass or fail but given the label "TEST" so it can use the standard test macro formatting)
+* `TEST08:` Set `HEATER1` to 40C (This is an operation that cannot pass or fail but given the label "TEST" so it can use the standard test macro formatting)
+* `TEST09:` ADXL345 Presence Check
+* `TEST10:` BLTouch Presence Check (Also Set Probe Position and check probe status)
+* `TEST11:` `NEOPIXEL0` Presence Check (User Operator must confirm `NEOPIXEL0` has a red output.  `NEOPIXEL0` is turned off after test)
+* `TEST12:` `NEOPIXEL1` Presence Check (User Operator must confirm `NEOPIXEL1` has a red output.  `NEOPIXEL1` is turned off after test)
+* `TEST13:` `DSENSOR0` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
+* `TEST14:` `DSENSOR1` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
+* `TEST15:` `DSENSOR2` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
+* `TEST16:` `DSENSOR3` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
+* `TEST17:` `DSENSOR4` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
+* `TEST18:` 'FAN0' Operations Check (Operator to confirm Blue LED on Board Under Test is lit and LED strip is lit.  After confirmation `DSENSOR1` is no longer driven so that Blue LED and LED strip are off)
+* `TEST19:` 'FAN1' Operations Check (Operator to confirm Blue LED on Board Under Test is lit and LED strip is lit.  After confirmation `DSENSOR1` is no longer driven so that Blue LED and LED strip are off)
+* `TEST20:` 'FAN2' Operations Check (Operator to confirm Blue LED on Board Under Test is lit and LED strip is lit.  After confirmation `DSENSOR2` is no longer driven so that Blue LED and LED strip are off)
+* `TEST21:` 'FAN3' Operations Check (Operator to confirm Blue LED on Board Under Test is lit and LED strip is lit.  After confirmation `DSENSOR3` is no longer driven so that Blue LED and LED strip are off)
+* `TEST22:` 'G28 X` Test to check stepper movement and sensorless homing operation 
+* `TEST23:` 'G28 Y` Test to check stepper movement and sensorless homing operation
+* `TEST24:` 'G28 Z` Test to check stepper movement and sensorless homing operation
+* `TEST25:` Functional Test of Inductive Sensor on Y-Axis stepper 
+* `TEST26:` Functional Test of BLTouch on Z-Axis stepper
+* `TEST27:` Ensure 'HEATER0` > 30C (When complete, set `HEATER0` to 0C)
+* `TEST28:` Ensure 'HEATER1` > 30C (When complete, set `HEATER1` to 0C)
+
+* Show "TEST COMPLETE" Message
+* `NEOPIXEL0` and `NEOPIXEL1` set to output blue light
+
+* Show "FIRMWARE SEALING" Message
+
+* `sudo service klipper stop`
+* sleep 2s
+* Cycle Reset 2x (Enable Katapult in MCU - Assume that this will work and there's no need to check it's active)
+* sleep 2s
+* load `nada.bin`
+* sleep 5s
+
+* `sudo shutdown now`
+
 ## Raspberry Pi CM4 Configuration Instructions
 
 ### Setup Raspberry Pi CM4 Operating System
@@ -169,114 +280,3 @@
 ### Make Board Under Test Firmware Images
 
 ### Test Micro SD Card Image with KGP 4x2209 & CANBus Toolhead Controller
-
-## Functional Test Process
-
-* `sudo service klipper stop`
-  
-* loadFlag = 7
-
-* Show "FIRMWARE LOAD" Message
-
-* sleep 5s
-
-* Enable DFU Mode on Board Under Test's MCU (Hold `BOOT0` high, cycle `RESET`)
-
-* sleep 2s
-
-*     if **NOT** in DFU Mode
-*         Cycle Reset 2x (Enable Katapult in MCU)
-*         if Katapult Active
-*             loadFlag = 3
-*         else
-*             ERROR - Unable to load firmware into Board Under Test's MCU
-
-*     if (loadFlag & 4)  //  Board will be in DFU Mode
-*         Flash `katapult.bin` using dfu-util
-*         sleep 1s
-*         Cycle Reset 2x (Enable Katapult in MCU)
-*         sleep 1s
-
-*     if NOT Katapult Active
-*         ERROR - Unable to load firmware into Board Under Test's MCU
-
-*     if (loadFlag & 2)  //  Flash DFU Enable in Option Bytes
-*         Flash `SKR_Mini_E3_V3_DFU.bin` using Katapult
-*         sleep 1s
-*         Cycle Reset 2x (Enable Katapult in MCU)
-*         sleep 1s
-
-*     if NOT Katapult Active
-*         ERROR - Unable to load firmware into Board Under Test's MCU
-
-*     if (loadFlag & 1)  //  Flash Klipper Firmware
-*         Flash `klipper.bin` using Katapult
-*         sleep 1s
-*         Cycle Reset 2x (Enable Katapult in MCU)
-*         sleep 1s
-
-* Show "KLIPPER START" Message
-
-*     if `mcu.cfg` exists
-*         erase `mcu.cfg`
-
-* Using `ls /dev/serial/by-id` Create `mcu.cfg`
-
-* `sudo service klipper start`
-
-* sleep 5s // **NOTE:** This needs to be timed to understand how long it takes for Klipper to come up
-
-*     for (i = 0; 5 > i; ++i)
-*         if klipper "READY"
-*             break
-*         endif
-*         sleep 1s
-*         execute FIRMWARE_RESTART
-*         sleep 5s // **NOTE:** This needs to be time to understand how long is required for Klipper to come up
-*     if 5 <= i
-*         ERROR - Klipper not coming up after MCU Flashed with Katapult, DFU Mode Enable, Klipper firmware
-
-* Show "FUNCTIONAL TEST START" Message
-
-* `TEST01:` Network Connections (Ping Internet Site to test Board Under Test's Ethernet Port using `sineosPING.sh`)
-* `TEST02:` Read Power Input (`VINMON`) Level (Check Input Power Level)
-* `TEST03:` Read MCU Temperature (MCU Presence Check)
-* `TEST04:` Read Toolhead MCU Temperature (Toolhead Presence Check)
-* `TEST05:` Ensure (`HEATER0` temp < 30C) && (`HEATER0` temp > 0C) (`HEATER0` thermistor Presence Check and at temperature appropriate for `HEATER0` functional test)
-* `TEST06:` Ensure (`HEATER1` temp < 30C) && (`HEATER1` temp > 0C) (`HEATER1` thermistor Presence Check and at temperature appropriate for `HEATER1` functional test)
-* `TEST07:` Set `HEATER0` to 40C (This is an operation that cannot pass or fail but given the label "TEST" so it can use the standard test macro formatting)
-* `TEST08:` Set `HEATER1` to 40C (This is an operation that cannot pass or fail but given the label "TEST" so it can use the standard test macro formatting)
-* `TEST09:` ADXL345 Presence Check
-* `TEST10:` BLTouch Presence Check (Also Set Probe Position and check probe status)
-* `TEST11:` `NEOPIXEL0` Presence Check (User Operator must confirm `NEOPIXEL0` has a red output.  `NEOPIXEL0` is turned off after test)
-* `TEST12:` `NEOPIXEL1` Presence Check (User Operator must confirm `NEOPIXEL1` has a red output.  `NEOPIXEL1` is turned off after test)
-* `TEST13:` `DSENSOR0` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
-* `TEST14:` `DSENSOR1` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
-* `TEST15:` `DSENSOR2` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
-* `TEST16:` `DSENSOR3` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
-* `TEST17:` `DSENSOR4` Functional Test (Operator to confirm that Yellow LED by Connector is lit)
-* `TEST18:` 'FAN0' Operations Check (Operator to confirm Blue LED on Board Under Test is lit and LED strip is lit.  After confirmation `DSENSOR1` is no longer driven so that Blue LED and LED strip are off)
-* `TEST19:` 'FAN1' Operations Check (Operator to confirm Blue LED on Board Under Test is lit and LED strip is lit.  After confirmation `DSENSOR1` is no longer driven so that Blue LED and LED strip are off)
-* `TEST20:` 'FAN2' Operations Check (Operator to confirm Blue LED on Board Under Test is lit and LED strip is lit.  After confirmation `DSENSOR2` is no longer driven so that Blue LED and LED strip are off)
-* `TEST21:` 'FAN3' Operations Check (Operator to confirm Blue LED on Board Under Test is lit and LED strip is lit.  After confirmation `DSENSOR3` is no longer driven so that Blue LED and LED strip are off)
-* `TEST22:` 'G28 X` Test to check stepper movement and sensorless homing operation 
-* `TEST23:` 'G28 Y` Test to check stepper movement and sensorless homing operation
-* `TEST24:` 'G28 Z` Test to check stepper movement and sensorless homing operation
-* `TEST25:` Functional Test of Inductive Sensor on Y-Axis stepper 
-* `TEST26:` Functional Test of BLTouch on Z-Axis stepper
-* `TEST27:` Ensure 'HEATER0` > 30C (When complete, set `HEATER0` to 0C)
-* `TEST28:` Ensure 'HEATER1` > 30C (When complete, set `HEATER1` to 0C)
-
-* Show "TEST COMPLETE" Message
-* `NEOPIXEL0` and `NEOPIXEL1` set to output blue light
-
-* Show "FIRMWARE SEALING" Message
-
-* `sudo service klipper stop`
-* sleep 2s
-* Cycle Reset 2x (Enable Katapult in MCU - Assume that this will work and there's no need to check it's active)
-* sleep 2s
-* load `nada.bin`
-* sleep 5s
-
-* `sudo shutdown now`
