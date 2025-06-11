@@ -360,7 +360,17 @@
 
 ![Klipper CAN Bus UUID](images/CAN_UUID.png)
 
-54. 
+54. Create an `mcu.cfg` file using the command: `echo "[mcu]\ncanbus_uuid: fc86d6d0415a" > printer_data/config/mcu.cfg` with the correct UUID for the KGP 4x2209 that was found previously
+
+55. `sudo service klipper start`
+
+56. Copy the `printer.cfg` file from this GitHub repository in the `configs` folder into the `http://kgpft1` Mainsail "MACHINE" web page.
+
+57. Comment out the `[include toolhead.cfg]` and '[temperature_sensor toolhead_temp]` statements in the `printer.cfg` in `http://kgpft1` for testing.
+
+58. Click on "SAVE AND RESTART`
+
+59. Problems seeing things come up....
 
 ### Flash Toolhead
 
