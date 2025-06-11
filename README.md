@@ -307,8 +307,33 @@
 
 ### Make Firmware Images
 
+42. Download Premade Firmare Images
+    * `mkdir bin`
+    * `cd bin`
+    * `wget -O nada.bin https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/bin/nada.bin?raw=true`
+    * `wget -O MINI_E3_V3_DFU.bin https://github.com/3dApothecary-xyz/SKR_Mini_E3_V3_DFU/blob/main/bin/MINI_E3_V3_DFU.bin?raw=true`
+    * `cd ~`
+
+42. Make `katapult.bin` for Board Under Test 
+    * `cd katapult`
+    * `make menuconfig` - Match settings with screen shot below and enter `Q` followed by `Y` to save
+![Katapult menuconfig settings](images/katapult_menuconfig.png)
+    * `make clean`
+    * `make`
+    * `cp out/katapult.bin ~/bin`
+    * `cd ~`
+
+43. Make `klipper.bin` for Board Under Test 
+    * `cd klipper`
+    * `make menuconfig` - Match settings with screen shot below and enter `Q` followed by `Y` to save
+![Katapult menuconfig settings](images/klipper_menuconfig.png)
+    * `make clean`
+    * `make`
+    * `cp out/klipper.bin ~/bin`
+    * `cd ~`
+   
 ### Flash Toolhead
 
-### Make Board Under Test Firmware Images
+
 
 ### Test Micro SD Card Image with KGP 4x2209 & CANBus Toolhead Controller
