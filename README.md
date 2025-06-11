@@ -285,17 +285,19 @@
 
 37. Check Klipper installation by loading the Mainsail webpage: `http://kgpft1`
 
+38. Load Pyserial for Katapult operation using `sudo apt install python3 python3-serial -y`
+
 ![kgpft1 Mainsail Webpage](images/Mainsail_Webpage.png)
 
 ### Load Numpy for ADXL345 Testing
 
 * Following instructions found at: [Measuring Resonances: Software Installation](https://www.klipper3d.org/Measuring_Resonances.html#software-installation)
 
-38. `sudo apt install python3-numpy python3-matplotlib libatlas-base-dev libopenblas-dev -y`
+39. `sudo apt install python3-numpy python3-matplotlib libatlas-base-dev libopenblas-dev -y`
 
-39. `~/klippy-env/bin/pip install -v "numpy<1.26"`
+40. `~/klippy-env/bin/pip install -v "numpy<1.26"`
 
-40. Check Numpy installation using: `~/klippy-env/bin/python -c 'import numpy;'` - Result should be a simple return:
+41. Check Numpy installation using: `~/klippy-env/bin/python -c 'import numpy;'` - Result should be a simple return:
 
 ![Numpy Check - Simple Return](images/Numpy_Check.png)
 
@@ -303,18 +305,18 @@
 
 * Following instructions found at: [GitHub Katapult Repository](https://github.com/Arksine/katapult)
 
-41. `git clone https://github.com/Arksine/katapult`
+42. `git clone https://github.com/Arksine/katapult`
 
 ### Make Firmware Images
 
-42. Download Premade Firmare Images
+43. Download Premade Firmare Images
     * `mkdir bin`
     * `cd bin`
     * `wget -O nada.bin https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/bin/nada.bin?raw=true`
     * `wget -O MINI_E3_V3_DFU.bin https://github.com/3dApothecary-xyz/SKR_Mini_E3_V3_DFU/blob/main/bin/MINI_E3_V3_DFU.bin?raw=true`
     * `cd ~`
 
-42. Make `katapult.bin` for Board Under Test 
+44. Make `katapult.bin` for Board Under Test 
     * `cd katapult`
     * `make menuconfig` - Match settings with screen shot below and enter `Q` followed by `Y` to save
 ![Katapult menuconfig settings](images/katapult_menuconfig.png)
@@ -323,7 +325,7 @@
     * `cp out/katapult.bin ~/bin`
     * `cd ~`
 
-43. Make `klipper.bin` for Board Under Test 
+45. Make `klipper.bin` for Board Under Test 
     * `cd klipper`
     * `make menuconfig` - Match settings with screen shot below and enter `Q` followed by `Y` to save
 ![Katapult menuconfig settings](images/klipper_menuconfig.png)
@@ -331,8 +333,44 @@
     * `make`
     * `cp out/klipper.bin ~/bin`
     * `cd ~`
-   
+
+46. `chmod 777 bin/*.bin`
+
+### Flash MCU on KGP 4x2209
+
+48. Stop Klipper while Flashing the KGP 4x2209 using `sudo service klipper stop`
+    
+48. `lsusb` and check to see that there is a device with "ID" `0483:df11`:
+
+![KGP 4x2209 Initial DFU Mode Check](images/KGP_4x2209_DFU_Mode.png)
+
+49. Flash Katapult into the KGP 4x2209 board using the command: `sudo dfu-util -a 0 -D ~/katapult/out/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11`
+
+50. Check for Katapult active by verifying the flashing LED on KGP 4x2209 and use the `ls /dev/serial/by-id` to check if has a USB address using `ls /dev/serial/by-id`
+
+![Katapult Active](images/Katapult_Active.png)
+
+51. Using the USB Serial Address found in the Previous Step, Flash Klipper using the command `python3 ~/katapult/scripts/flashtool.py -f ~/klipper/out/klipper.bin -d /dev/serial/by-id/usb-katapult_stm32g0b1xx_1A003E001050505933383420-if00` (which is using the USB address found previously)
+
+52. Check to see that Klipper was installed using the command 'ip -s -d link show can0` with the expected result:
+
+![Klipper Flashed into KGP 4x2209](images/CAN_Link_Active.png)
+
+53. Get the CAN UUID using the command: `~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0` with the expected result:
+
+![Klipper CAN Bus UUID](images/CAN_UUID.png)
+
+54. 
+
 ### Flash Toolhead
+
+45. On EBB42, Put in `120R` and `VBUS` Jumpers
+
+46. Connect EBB42 to KGP 4x209 using USB C to USB A Cable
+
+47. Press the `BOOT` Button followed by cycling `RST` to put the EBB42 into DFU Mode as shown in the following image
+
+![EBB42 Topside](images/EBB42_topside.png)
 
 
 
