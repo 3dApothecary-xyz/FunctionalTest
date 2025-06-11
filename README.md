@@ -301,6 +301,10 @@
 
 ![Numpy Check - Simple Return](images/Numpy_Check.png)
 
+### Install Klipper on Raspberry Pi CM4 to allow Klipper to access the CM4's GPIO pins
+
+* Following instructions found at: [Klipper: Install the RC Script](https://www.klipper3d.org/RPi_microcontroller.html?h=raspb#install-the-rc-script)
+
 ### Load Katapult
 
 * Following instructions found at: [GitHub Katapult Repository](https://github.com/Arksine/katapult)
