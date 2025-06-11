@@ -366,7 +366,7 @@
 
 56. Copy the `printer.cfg` file from this GitHub repository in the `configs` folder into the `http://kgpft1` Mainsail "MACHINE" web page.
 
-57. Comment out the `[include toolhead.cfg]` and '[temperature_sensor toolhead_temp]` statements in the `printer.cfg` in `http://kgpft1` for testing.
+57. Comment out the `[include toolhead.cfg]` and `[temperature_sensor toolhead_temp]` statements in the `printer.cfg` in `http://kgpft1` for testing.
 
 58. Click on "SAVE AND RESTART`
 
