@@ -8,8 +8,8 @@
 * Manufacturer Supplied: 24V/5A "Bench Power Supply" with Digital Outputs and Overcurrent Protection
 * Manufacturer Supplied: 1920 x 1080p "HDMI Monitor"
 * Manufacturer Supplied: Full Sized HDMI Cable (for Board Under Test to HDMI Monitor)
-* Manufacturer Supplied: USB Keyboard (US Key Layout)
 * Manufacturer supplied: Ethernet Cable with RJ45 Connector to Active Internet Connection
+* Company Supplied: USB Keyboard (US Key Layout)
 * Company Supplied: Silicon Solder Pad with Test Apparatus Markings and Parts
 * Company Supplied: [Raspberry Pi CM4 (CM4101000)](https://datasheets.raspberrypi.com/cm4/cm4-product-brief.pdf)
 * Company Supplied: Micro SD Card 64GB or larger
