@@ -305,6 +305,28 @@
 
 * Following instructions found at: [Klipper: Install the RC Script](https://www.klipper3d.org/RPi_microcontroller.html?h=raspb#install-the-rc-script)
 
+42. `sudo cp klipper/scripts/klipper-mcu.service /etc/systemd/system/`
+
+43. `sudo systemctl enable klipper-mcu.service`
+
+44. `cd klipper`
+
+45. `make menuconfig` and select "Linux process" for "MCU Architecture":
+
+![Make Linux Process](images/Make_Linux_Process.png)
+
+46. Enter `Q` and then `Y` to quit and save the settings.
+
+47. `make clean`
+
+48. `make`
+
+49. `sudo service klipper stop`
+
+50. `make flash`
+
+51. `sudo service klipper start`
+
 ### Load Katapult
 
 * Following instructions found at: [GitHub Katapult Repository](https://github.com/Arksine/katapult)
@@ -332,7 +354,7 @@
 45. Make `klipper.bin` for Board Under Test 
     * `cd klipper`
     * `make menuconfig` - Match settings with screen shot below and enter `Q` followed by `Y` to save
-![Katapult menuconfig settings](images/klipper_menuconfig.png)
+![Katapult menuconfig settings](images/klipper_menuconfig_2.png)
     * `make clean`
     * `make`
     * `cp out/klipper.bin ~/bin`
