@@ -458,6 +458,20 @@
 
 92. `sudo service klipper stop`
 
-93. 
+93. `python3 ~/katapult/scripts/flashtool.py -i can0 -q` which should return something like:
 
-### Test Micro SD Card Image with KGP 4x2209 & CANBus Toolhead Controller
+![Toolhead Controller Katapult UUID](images/Toolhead_Controller_Klipper_Paramters.png)
+
+94. Flash the Toolhead Controller using `python3 ~/katapult/scripts/flashtool.py -i can0 -f ~/klipper/out/klipper.bin -u 821165b91308` using the UUID found in the previous step
+
+95. Check for the CAN UUID using `python3 ~/katapult/scripts/flashtool.py -i can0 -q` which will return the Klipper CAN UUID:
+
+![Toolhead Controller CAN UUID](images/Toolhead_Controller_CAN_UUID.png)
+
+96. Using the CAN UUID found in the previous step, create the `toolhead.cfg` file using the command `printf "[mcu toolhead]\ncanbus_uuid: 821165b91308" > ~/printer_data/config/toolhead.cfg`
+
+97. Edit `printer.cfg` on the Mainsail webpage and Remove comments on the `[include toolhead.cfg]` and `[temperature_sensor toolhead_temp]` statements
+
+98. `sudo service klipper start` and Klipper should start up as:
+
+![Test SD Card All Setup](images/Test_SD_Card_All_Setup.png)
