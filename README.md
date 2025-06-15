@@ -251,6 +251,7 @@
     * `wget -O cycleRESET.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycleRESET.py?raw=true`
     * `wget -O enableDFU.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/enableDFU.py?raw=true`
     * `wget -O enableKatapult.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/enableKatapult.py?raw=true`
+    * `wget -O toogleBOOT0.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/toogleBOOT0.py?raw=true`
     * `cd ~`
       
 32. Test python operation with: `python python/cycle38.py`
