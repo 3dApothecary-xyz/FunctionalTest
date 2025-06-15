@@ -42,11 +42,9 @@
 
 * Show "FIRMWARE LOAD" Message
 
-* sleep 5s
+* enableDFU.py <== Enable DFU Mode on Board Under Test's MCU (Hold `BOOT0` high, cycle `RESET`)
 
-* Enable DFU Mode on Board Under Test's MCU (Hold `BOOT0` high, cycle `RESET`)
-
-* sleep 2s
+* sleep 2
 
 *     if **NOT** in DFU Mode
 *         Cycle Reset 2x (Enable Katapult in MCU)
@@ -57,27 +55,27 @@
 
 *     if (loadFlag & 4)  //  Board will be in DFU Mode
 *         Flash `katapult.bin` using dfu-util
-*         sleep 1s
+*         sleep 1
 *         Cycle Reset 2x (Enable Katapult in MCU)
-*         sleep 1s
+*         sleep 1
 
 *     if NOT Katapult Active
 *         ERROR - Unable to load firmware into Board Under Test's MCU
 
 *     if (loadFlag & 2)  //  Flash DFU Enable in Option Bytes
 *         Flash `SKR_Mini_E3_V3_DFU.bin` using Katapult
-*         sleep 1s
+*         sleep 1
 *         Cycle Reset 2x (Enable Katapult in MCU)
-*         sleep 1s
+*         sleep 1
 
 *     if NOT Katapult Active
 *         ERROR - Unable to load firmware into Board Under Test's MCU
 
 *     if (loadFlag & 1)  //  Flash Klipper Firmware
 *         Flash `klipper.bin` using Katapult
-*         sleep 1s
+*         sleep 1
 *         Cycle Reset 2x (Enable Katapult in MCU)
-*         sleep 1s
+*         sleep 1
 
 * Show "KLIPPER START" Message
 
@@ -94,9 +92,9 @@
 *         if klipper "READY"
 *             break
 *         endif
-*         sleep 1s
+*         sleep 1
 *         execute FIRMWARE_RESTART
-*         sleep 5s // **NOTE:** This needs to be time to understand how long is required for Klipper to come up
+*         sleep 5 # <=== **NOTE:** This needs to be time to understand how long is required for Klipper to come up
 *     if 5 <= i
 *         ERROR - Klipper not coming up after MCU Flashed with Katapult, DFU Mode Enable, Klipper firmware
 
@@ -137,11 +135,11 @@
 * Show "FIRMWARE SEALING" Message
 
 * `sudo service klipper stop`
-* sleep 2s
+* sleep 2
 * Cycle Reset 2x (Enable Katapult in MCU - Assume that this will work and there's no need to check it's active)
-* sleep 2s
+* sleep 2
 * load `nada.bin`
-* sleep 5s
+* sleep 5
 
 * `sudo shutdown now`
 
