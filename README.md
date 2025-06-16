@@ -41,10 +41,10 @@
 * Show "FIRMWARE LOAD" Message
 
 * if DFU Mode Active
-* ```
-  loadFlag=(true << 2) + (true << 1) + (true << 0)   # Bit 2 - Load Katapult
-                                                     #     1 - Load DFU Option Byte Enable Firmware
-                                                     #     0 - Load Klipper
+```
+      loadFlag=(true << 2) + (true << 1) + (true << 0)   # Bit 2 - Load Katapult
+                                                         #     1 - Load DFU Option Byte Enable Firmware
+                                                         #     0 - Load Klipper
 ```
 * else
 
