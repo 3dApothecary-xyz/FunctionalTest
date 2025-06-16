@@ -37,14 +37,20 @@
 ## Functional Test Process
 
 * `sudo service klipper stop`
-  
-* loadFlag = 7
 
 * Show "FIRMWARE LOAD" Message
 
-* enableDFU.py <== Enable DFU Mode on Board Under Test's MCU (Hold `BOOT0` high, cycle `RESET`)
+* if DFU Mode Active
+* ```
+  loadFlag=(true << 2) + (true << 1) + (true << 0)   # Bit 2 - Load Katapult
+                                                     #     1 - Load DFU Option Byte Enable Firmware
+                                                     #     0 - Load Klipper
+```
+* else
 
-* sleep 2
+*     enableDFU.py <== Enable DFU Mode on Board Under Test's MCU (Hold `BOOT0` high, cycle `RESET`)
+
+*     sleep 2
 
 *     if **NOT** in DFU Mode
 *         Cycle Reset 2x (Enable Katapult in MCU)
@@ -53,29 +59,29 @@
 *         else
 *             ERROR - Unable to load firmware into Board Under Test's MCU
 
-*     if (loadFlag & 4)  //  Board will be in DFU Mode
-*         Flash `katapult.bin` using dfu-util
-*         sleep 1
-*         Cycle Reset 2x (Enable Katapult in MCU)
-*         sleep 1
+* if (loadFlag & 4)  //  Board will be in DFU Mode
+*     Flash `katapult.bin` using dfu-util
+*     sleep 1
+*     Cycle Reset 2x (Enable Katapult in MCU)
+*     sleep 1
 
-*     if NOT Katapult Active
-*         ERROR - Unable to load firmware into Board Under Test's MCU
+* if NOT Katapult Active
+*     ERROR - Unable to load firmware into Board Under Test's MCU
 
-*     if (loadFlag & 2)  //  Flash DFU Enable in Option Bytes
-*         Flash `SKR_Mini_E3_V3_DFU.bin` using Katapult
-*         sleep 1
-*         Cycle Reset 2x (Enable Katapult in MCU)
-*         sleep 1
+* if (loadFlag & 2)  //  Flash DFU Enable in Option Bytes
+*     Flash `SKR_Mini_E3_V3_DFU.bin` using Katapult
+*     sleep 1
+*     Cycle Reset 2x (Enable Katapult in MCU)
+*     sleep 1
 
-*     if NOT Katapult Active
-*         ERROR - Unable to load firmware into Board Under Test's MCU
+* if NOT Katapult Active
+*     ERROR - Unable to load firmware into Board Under Test's MCU
 
-*     if (loadFlag & 1)  //  Flash Klipper Firmware
-*         Flash `klipper.bin` using Katapult
-*         sleep 1
-*         Cycle Reset 2x (Enable Katapult in MCU)
-*         sleep 1
+* if (loadFlag & 1)  //  Flash Klipper Firmware
+*     Flash `klipper.bin` using Katapult
+*     sleep 1
+*     Cycle Reset 2x (Enable Katapult in MCU)
+*     sleep 1
 
 * Show "KLIPPER START" Message
 
