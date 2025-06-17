@@ -42,17 +42,17 @@
 
 * if DFU Mode Active
 ```
-      loadFlag=(true << 2) + (true << 1) + (true << 0)   # Bit 2 - Load Katapult
-                                                         #     1 - Load DFU Option Byte Enable Firmware
-                                                         #     0 - Load Klipper
+      loadKatapult=1
 ```
 * else
 
-*     enableDFU.py <== Enable DFU Mode on Board Under Test's MCU (Hold `BOOT0` high, cycle `RESET`)
+*     loadKatapult=0
+  
+*     enableKatapult.py
 
 *     sleep 2
 
-*     if **NOT** in DFU Mode
+*     if **NOT** Katapult Active
 *         Cycle Reset 2x (Enable Katapult in MCU)
 *         if Katapult Active
 *             loadFlag = 3
