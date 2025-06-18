@@ -5,7 +5,9 @@
 # Code here is documented at: https://github.com/3dApothecary-xyz/FunctionalTest/tree/main?tab=readme-ov-file#functional-test-process
 
 ftVersion() {
-  ver="0.01" # Initial Version to work 
+  ver="0.01" # Initial Version to Debug Firmware Load
+  ver="0.02" # Confirm Klipper is Running
+             # Start Testing
 
   echo "$ver"
 }
@@ -52,7 +54,8 @@ ftVersion() {
 ########################################################################
 # Initialization Code Start 
 ########################################################################
-set -e
+set -e  # Stop on Errors
+#set -x  # Show all values 
 
 sudo service klipper stop
 
@@ -318,7 +321,7 @@ lsusbResponse=$(lsusb)
 
 echo -e "  "
 echo -e "FLS:01"
-echo "$lsusbResponse"
+echo -e "$lsusbResponse"
 echo -e "  "
 
 if echo "$lsusbResponse" | grep -q "0483:df11"; then
@@ -331,7 +334,7 @@ else
   katapultResponse=$(ls /dev/serial/by-id)
 
   echo -e "FLS:02"
-  echo "$katapultResponse"
+  echo -e "$katapultResponse"
   echo -e "  "
 
   if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
@@ -344,7 +347,7 @@ else
     lsusbResponse=$(lsusb)
 
     echo -e "FLS:03"
-    echo "$lsusbResponse"
+    echo -e "$lsusbResponse"
     echo -e "  "
 
     if echo "$lsusbResponse" | grep -q "0483:df11"; then
@@ -369,7 +372,7 @@ if [ 0 -ne $loadKatapult ]; then
 
   echo -e "  "
   echo -e "FLS:04"
-  echo "$katapultResponse"
+  echo -e "$katapultResponse"
   echo -e "  "
 
   if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
@@ -392,7 +395,7 @@ dfuResponse=$(ls /dev/serial/by-id)
 
 echo -e "  "
 echo -e "FLS:05"
-echo "$dfuResponse"
+echo -e "$dfuResponse"
 echo -e "  "
 
 if echo "$dfuResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
@@ -410,7 +413,7 @@ configFolder=$(ls ~/printer_data/config)
 
 echo -e "  "
 echo -e "FLS:06"
-echo "$configFolder"
+echo -e "$configFolder"
 echo -e "  "
 
 if echo "$configFolder" | grep -q "mcu.cfg"; then
@@ -420,7 +423,7 @@ fi
 canUUID=$(~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0)
 
 echo -e "FLS:07"
-echo "$canUUID"
+echo -e "$canUUID"
 echo -e "  "
 
 mapfile -t canUUIDArray <<< "$canUUID"
@@ -434,7 +437,7 @@ toolheadUUID="${toolheadUUID#canbus_uuid: }"
 toolheadUUID="${toolheadUUID%:0:12}"
 
 echo -e "FLS:08"
-echo "$toolheadUUID"
+echo -e "$toolheadUUID"
 echo -e "  "
 
 mcuUUID=""
@@ -446,7 +449,7 @@ for arrayElement in "${canUUIDArray[@]}"; do
 
     echo -e "FLS:09-$i"
     i=$((i+1))
-    echo "$arrayElement"
+    echo -e "$arrayElement"
     echo -e "  "
     
     if [[ "$arrayElement" == "$toolheadUUID" ]]; then
@@ -458,37 +461,67 @@ for arrayElement in "${canUUIDArray[@]}"; do
 done
 
 echo -e "FLS:10"
-echo "$mcuUUID"
+echo -e "$mcuUUID"
 echo -e "  "
 
 printf "[mcu]\ncanbus_uuid: $mcuUUID\n" > ~/printer_data/config/mcu.cfg
 
+
+
+########################################################################
+# Verify Klipper is Running
+########################################################################
+
+echo -e "  "
+echo -e "$outline$PHULLSTRING"
+doAppend "!Klipper Startup"
+
 sudo service klipper start
-    
+
+klipperFlag=0
+for ((i=1;10>=i;++i)); do
+  if [ $klipperFlag -eq 0 ]; then
+    sleep 2
+
+    echo -ne "STATUS\n" > "$TTY" 
+    RESPONSE=$(timeout 2 cat "$TTY") || true
+
+    if echo "$RESPONSE" | grep -q "Klipper state: Ready"; then
+      klipperFlag=1
+
+      echo -e "  "
+      echo -e "VKR:$i"
+      echo -e "STATUS_RESPONSE=$RESPONSE"
+      echo -e "  "
+    fi
+  fi
+done
+
+if [ $klipperFlag -eq 1 ]; then
+  echo -e "VKR:Complete"
+  echo -e "Klipper Running"
+  echo -e "  "
+else 
+  drawError "Klipper Not Starting Up" "Contact Support"
+  exit
+fi
+
+
+
+########################################################################
+# Start Functional Test
+########################################################################
+
+echo -e "  "
+echo -e "$outline$PHULLSTRING"
+doAppend "!Klipper Functional Test"
+
+
+
+
 
 
 ########################################################################
 ## STOP HERE WHILE DEVELOPING CODE
 ########################################################################
 exit
-
-    Flash `KGP_4x2209_DFU.bin` using Katapult
-    sleep 1
-    Cycle Reset 2x (Enable Katapult in MCU)
-    sleep 1
-if NOT Katapult Active
-    ERROR - Unable to load firmware into Board Under Test's MCU
-
-    Flash `klipper.bin` using Katapult
-    sleep 1
-    Cycle Reset 2x (Enable Katapult in MCU)
-    sleep 1
-
-Show "KLIPPER START" Message
-
-if `mcu.cfg` exists
-    erase `mcu.cfg`
-Using ls /dev/serial/by-id Create mcu.cfg
-
-sudo service klipper start
-
