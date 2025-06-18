@@ -551,9 +551,8 @@ fi
 
 echo -e "  "
 echo -e "$outline$PHULLSTRING"
-doAppend "!Klipper Functional Test"
+doAppend "!KGP 4x2209 Functional Test"
 echo -e "  "
-
 
 ########################################################################
 # TEST01: Ping
@@ -573,8 +572,109 @@ else
   exit
 fi
 
+########################################################################
+# TEST02: VINMON
+########################################################################
+
+echo -e "$outline$PHULLSTRING"
+doAppend "!TEST02: VINMON"
+
+echo -ne "TEST02\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 2 cat "$TTY") || true
+
+echo -e "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "Test02: VINMON Test: PASS"; then
+  echo "TEST02: VINMON Test Complete"
+  echo -e "  "
+else
+  echo -e "  "
+  drawError "TEST02: VINMON" "Invalid Voltage Read"
+  exit
+fi
+
+########################################################################
+# TEST03: MCU Temperature
+########################################################################
+
+echo -e "$outline$PHULLSTRING"
+doAppend "!TEST03: MCU Temperature"
+
+echo -ne "TEST03\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 2 cat "$TTY") || true
+
+echo -e "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "Test03: MCU Temperature Test: PASS"; then
+  echo "TEST03: MCU Temperature Test Complete"
+  echo -e "  "
+else
+  echo -e "  "
+  drawError "TEST03: MCU Temperature Test" "Invalid MCU Temperature Value Read"
+  exit
+fi
+
+########################################################################
+# TEST04: Toolhead Temperature
+########################################################################
+
+echo -e "$outline$PHULLSTRING"
+doAppend "!TEST04: Toolhead Temperature"
+
+echo -ne "TEST04\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 2 cat "$TTY") || true
+
+echo -e "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "Test04: Toolhead Temperature Test: PASS"; then
+  echo "TEST04: Toolhead Temperature Test Complete"
+  echo -e "  "
+else
+  echo -e "  "
+  drawError "TEST04: Toolhead Temperature Test" "Invalid Toolhead Temperature Value Read"
+  exit
+fi
+
+########################################################################
+# TEST05: THERMO0 Temperature
+########################################################################
+
+echo -e "$outline$PHULLSTRING"
+doAppend "!TEST05: THERMO0 Temperature"
+
+echo -ne "TEST05\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 2 cat "$TTY") || true
+
+echo -e "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "Test05: THERMO0 Test: PASS"; then
+  echo "TEST05: THERMO0 Temperature Test Complete"
+  echo -e "  "
+else
+  if echo "$TEST_RESPONSE" | grep -q "Test05: Check THERMO0 Connection to Thermistor"; then
+    echo -e "  "
+    drawError "TEST05: THERMO0 Temperature Test" "Check Thermistor THERMO0 Connection to Board Under Test"
+    exit
+  else
+    echo -e "  "
+    drawError "TEST05: THERMO0 Temperature Test" "Invalid Thermistor Temperature Value Read"
+    exit
+  fi
+fi
 
 
+
+
+
+
+########################################################################
+## Tests Complete: Halt Here so Sealing Operation doesn't Cause Testing Issues
+########################################################################
+exit
 
 
 ########################################################################
