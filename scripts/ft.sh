@@ -8,6 +8,8 @@ ftVersion() {
   ver="0.01" # Initial Version to Debug Firmware Load
   ver="0.02" # Confirm Klipper is Running
              # Start Testing
+  ver="0.03" # Continue adding Test Code
+             # Put in Software "Sealing" operation
 
   echo "$ver"
 }
@@ -210,6 +212,7 @@ errorString="$2"
   stringLength=$(( displayWidth - ( 4 + 4 + 4 + 1 + versionLength + headerLength )))
   echo -e "##$highlight  FT $version ${EMPTYSTRING:0:$stringLength} $errorHeaderMessage  $outline##"
   echo -e "$outline$PHULLSTRING
+##                                                                      ##
 ##  EEEEEEEEEEE   RRRRRRRR      RRRRRRRR         OOOOO      RRRRRRRR    ##
 ##  EEEEEEEEEEE   RRRRRRRRRR    RRRRRRRRRR     OOOOOOOOO    RRRRRRRRRR  ##
 ##  EEE     EEE   RRR     RRR   RRR     RRR   OOOO   OOOO   RRR     RRR ##
@@ -280,6 +283,33 @@ drawSplashScreen() {
 ##$LIGHTRED           #     #  ## #   # #   #   #   #         #  #  #            $outline##
 ##$LIGHTRED           #      ## # #   #  ###    #    ###  ####    ##             $outline##
 ##$LIGHTRED                                                                      $outline##
+$PHULLSTRING$BASE"
+}
+drawPASS() {
+
+  echo -e "$outline$PHULLSTRING"
+  version=$(ftVersion) 
+  headerLength=${#errorHeaderMessage}
+  versionLength=${#version}
+  stringLength=$(( displayWidth - ( 4 + 4 + 4 + 1 + versionLength + headerLength )))
+  echo -e "##$highlight  FT $version ${EMPTYSTRING:0:$stringLength} $errorHeaderMessage  $outline##"
+  echo -e "$outline$PHULLSTRING
+##$BLUE                                                                      $outline##
+##$BLUE            ########        ##        ######      ######              $outline##
+##$BLUE            ########        ##        ######      ######              $outline##
+##$BLUE            ##      ##    ##  ##    ##      ##  ##      ##            $outline##
+##$BLUE            ##      ##    ##  ##    ##      ##  ##      ##            $outline##
+##$BLUE            ##      ##  ##      ##  ##          ##                    $outline##
+##$BLUE            ##      ##  ##      ##  ##          ##                    $outline##
+##$BLUE            ########    ##      ##    ######      ######              $outline##
+##$BLUE            ########    ##      ##    ######      ######              $outline##
+##$BLUE            ##          ##########          ##          ##            $outline##
+##$BLUE            ##          ##########          ##          ##            $outline##
+##$BLUE            ##          ##      ##  ##      ##  ##      ##            $outline##
+##$BLUE            ##          ##      ##  ##      ##  ##      ##            $outline##
+##$BLUE            ##          ##      ##    ######      ######              $outline##
+##$BLUE            ##          ##      ##    ######      ######              $outline##
+##$BLUE                                                                      $outline##
 $PHULLSTRING$BASE"
 }
 
@@ -548,6 +578,46 @@ fi
 
 
 ########################################################################
-## STOP HERE WHILE DEVELOPING CODE
+## Tests Complete: Software Sealing
 ########################################################################
+
+echo -e "$outline$PHULLSTRING"
+doAppend "!Software Sealing"
+
+python ~/python/enableKatapult.py
+  
+sleep 1
+  
+katapultResponse=$(ls /dev/serial/by-id) || true
+
+echo -e "SSS:02"
+echo -e "$katapultResponse"
+echo -e "  "
+
+if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
+  python3 ~/katapult/scripts/flashtool.py -f ~/bin/nada.bin -d /dev/serial/by-id/$katapultResponse
+  
+  sleep 1
+ 
+  python ~/python/cycleRESET.py
+  
+  sleep 2
+ 
+  katapultResponse=$(ls /dev/serial/by-id) || true
+
+  echo -e " "
+  echo -e "$katapultResponse"
+
+  echo -e " "
+  drawPASS   
+   
+#### - Need to Set NeoPixels to BLUE
+  echo -e " "
+  echo -e "Need to Set NeoPixels to BLUE"
+  
+else
+  echo -e "  "
+  drawError "Software Sealing" "Unable to Start Katapult"
+fi
+
 exit
