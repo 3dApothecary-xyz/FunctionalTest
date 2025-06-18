@@ -85,25 +85,6 @@ applicationDoneMsg="User Requested Application Exit"
 
 
 ########################################################################
-# Resource Methods
-########################################################################
-FIRMWARE_RESTART() {
-
-  echo -ne "FIRMWARE_RESTART\n" > "$TTY"
-
-  RESPONSE=$(timeout 2 cat "$TTY")
-
-  if echo "$RESPONSE" | grep -q "Klipper state: Ready"; then
-    result=true
-  else
-    result=false
-  fi
-  
-  echo "$result"
-}
-
-
-########################################################################
 # Test Methods
 ########################################################################
 Test1() {
@@ -222,10 +203,13 @@ drawError() {
 errorHeaderMessage="$1"
 errorString="$2"
 
-  drawHeader "$errorHeaderMessage"
-#                            1111111111222222222233333333334444444444555555555566666666667777
-#                  01234567890123456789012345678901234567890123456789012345678901234567890123 
-  echo -e "$outline##                                                                      ##
+  echo -e "$outline$PHULLSTRING"
+  version=$(ftVersion) 
+  headerLength=${#errorHeaderMessage}
+  versionLength=${#version}
+  stringLength=$(( displayWidth - ( 4 + 4 + 4 + 1 + versionLength + headerLength )))
+  echo -e "##$highlight  FT $version ${EMPTYSTRING:0:$stringLength} $errorHeaderMessage  $outline##"
+  echo -e "$outline$PHULLSTRING
 ##  EEEEEEEEEEE   RRRRRRRR      RRRRRRRR         OOOOO      RRRRRRRR    ##
 ##  EEEEEEEEEEE   RRRRRRRRRR    RRRRRRRRRR     OOOOOOOOO    RRRRRRRRRR  ##
 ##  EEE     EEE   RRR     RRR   RRR     RRR   OOOO   OOOO   RRR     RRR ##
@@ -331,7 +315,7 @@ else
   
   sleep 1
   
-  katapultResponse=$(ls /dev/serial/by-id)
+  katapultResponse=$(ls /dev/serial/by-id) || true
 
   echo -e "FLS:02"
   echo -e "$katapultResponse"
@@ -344,7 +328,7 @@ else
   
     sleep 1
         
-    lsusbResponse=$(lsusb)
+    lsusbResponse=$(lsusb) || true
 
     echo -e "FLS:03"
     echo -e "$lsusbResponse"
@@ -368,7 +352,7 @@ if [ 0 -ne $loadKatapult ]; then
   
   sleep 1
   
-  katapultResponse=$(ls /dev/serial/by-id)
+  katapultResponse=$(ls /dev/serial/by-id) || true
 
   echo -e "  "
   echo -e "FLS:04"
@@ -491,8 +475,31 @@ for ((i=1;10>=i;++i)); do
 
       echo -e "  "
       echo -e "VKR:$i"
-      echo -e "STATUS_RESPONSE=$RESPONSE"
+      echo -e "STATUS RESPONSE=$RESPONSE"
       echo -e "  "
+    else
+      if echo "$RESPONSE" | grep -q "Can not update MCU 'host' config as it is shutdown"; then
+        sleep 2
+
+        echo -ne "FIRMWARE_RESTART\n" > "$TTY" 
+        RESTART_RESPONSE=$(timeout 2 cat "$TTY") || true
+
+        if echo "$RESTART_RESPONSE" | grep -q "Klipper state: Ready"; then
+          klipperFlag=1
+
+          echo -e "  "
+          echo -e "VKR:$i"
+          echo -e "FIRMWARE_RESTART RESPONSE=$RESTART_RESPONSE"
+          echo -e "  "
+        else
+          echo -e "  "
+          echo -e "VKR:$i"
+          echo -e "STATUS RESPONSE=$RESPONSE"
+          echo -e "  "
+          echo -e "Sent FIRMWARE_RESTART"
+          echo -e "  "
+        fi
+      fi
     fi
   fi
 done
@@ -509,13 +516,32 @@ fi
 
 
 ########################################################################
-# Start Functional Test
+# Functional Tests Follows
 ########################################################################
 
 echo -e "  "
 echo -e "$outline$PHULLSTRING"
 doAppend "!Klipper Functional Test"
+echo -e "  "
 
+
+########################################################################
+# TEST01: Ping
+########################################################################
+
+echo -e "$outline$PHULLSTRING"
+doAppend "!TEST01: Ping"
+
+pingRESPONSE=$(ping -c 2 klipper.discourse.group)
+
+if echo "$pingRESPONSE" | grep -q "klipper.hosted"; then
+  echo "TEST01: Ping Test Complete"
+  echo -e "  "
+else
+  echo -e "  "
+  drawError "TEST01: Ping" "No Response"
+  exit
+fi
 
 
 
