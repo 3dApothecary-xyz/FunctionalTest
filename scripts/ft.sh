@@ -89,17 +89,15 @@ applicationDoneMsg="User Requested Application Exit"
 ########################################################################
 # Test Methods
 ########################################################################
-Test1() {
+heatersOff() {
 
-  pingResponse=$(ping -c 2 klipper.discourse.group)
+  echo -ne "OFFHEATER0\n" > "$TTY" || true
 
-  if echo "$pingResponse" | grep -q "2 packets transmitted, 2 received,"; then
-    result=true
-  else
-    result=false
-  fi
-  
-  echo "$result"
+  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+  echo -ne "OFFHEATER1\n" > "$TTY" || true
+
+  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 }
 
 
@@ -581,7 +579,7 @@ doAppend "!TEST02: VINMON"
 
 echo -ne "TEST02\n" > "$TTY" || true
 
-TEST_RESPONSE=$(timeout 2 cat "$TTY") || true
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echo -e "$TEST_RESPONSE"
 
@@ -603,7 +601,7 @@ doAppend "!TEST03: MCU Temperature"
 
 echo -ne "TEST03\n" > "$TTY" || true
 
-TEST_RESPONSE=$(timeout 2 cat "$TTY") || true
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echo -e "$TEST_RESPONSE"
 
@@ -625,7 +623,7 @@ doAppend "!TEST04: Toolhead Temperature"
 
 echo -ne "TEST04\n" > "$TTY" || true
 
-TEST_RESPONSE=$(timeout 2 cat "$TTY") || true
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echo -e "$TEST_RESPONSE"
 
@@ -647,7 +645,7 @@ doAppend "!TEST05: THERMO0 Temperature"
 
 echo -ne "TEST05\n" > "$TTY" || true
 
-TEST_RESPONSE=$(timeout 2 cat "$TTY") || true
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echo -e "$TEST_RESPONSE"
 
@@ -666,10 +664,86 @@ else
   fi
 fi
 
+########################################################################
+# TEST06: THERMO1 Temperature
+########################################################################
+
+echo -e "$outline$PHULLSTRING"
+doAppend "!TEST06: THERMO1 Temperature"
+
+echo -ne "TEST06\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+echo -e "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "Test06: THERMO1 Test: PASS"; then
+  echo "TEST06: THERMO0 Temperature Test Complete"
+  echo -e "  "
+else
+  if echo "$TEST_RESPONSE" | grep -q "Test06: Check THERMO1 Connection to Thermistor"; then
+    echo -e "  "
+    drawError "TEST06: THERMO1 Temperature Test" "Check Thermistor THERMO1 Connection to Board Under Test"
+    exit
+  else
+    echo -e "  "
+    drawError "TEST06: THERMO1 Temperature Test" "Invalid Thermistor Temperature Value Read"
+    exit
+  fi
+fi
+
+########################################################################
+# TEST07: Set HEATER0 Temperature to 40C
+########################################################################
+
+echo -e "$outline$PHULLSTRING"
+doAppend "!TEST07: Set HEATER0 Temperature to 40C"
+
+echo -ne "TEST07\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+echo -e "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "Test07: HEATER0 Set to 40"; then
+  echo "TEST07: Set HEATER0 Temperature to 40C"
+  echo -e "  "
+else
+  echo -e "  "
+  drawError "TEST07: Set HEATER0 Temperature to 40C" "Unable to Set HEATER0 Temperature"
+  exit
+fi
+
+########################################################################
+# TEST08: Set HEATER1 Temperature to 40C
+########################################################################
+
+echo -e "$outline$PHULLSTRING"
+doAppend "!TEST08: Set HEATER1 Temperature to 40C"
+
+echo -ne "TEST08\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+echo -e "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "Test08: HEATER1 Set to 40"; then
+  echo "TEST08: Set HEATER1 Temperature to 40C"
+  echo -e "  "
+else
+  echo -e "  "
+  drawError "TEST08: Set HEATER1 Temperature to 40C" "Unable to Set HEATER1 Temperature"
+  exit
+fi
 
 
 
 
+
+
+
+
+heatersOff
 
 ########################################################################
 ## Tests Complete: Halt Here so Sealing Operation doesn't Cause Testing Issues
@@ -713,7 +787,7 @@ if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
    
 #### - Need to Set NeoPixels to BLUE
   echo -e " "
-  echo -e "Need to Set NeoPixels to BLUE"
+  echo -e "#### Need to Set NeoPixels to BLUE"
   
 else
   echo -e "  "
