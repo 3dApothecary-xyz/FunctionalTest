@@ -270,7 +270,7 @@
     * `mkdir scripts`
     * `cd scripts`
     * `wget -O ft.sh https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/scripts/ft.sh?raw=true`
-    * `chmod 777 *.py`
+    * `chmod 777 *.sh`
     * `cd ~`
 
 ### Create `logs` directory
