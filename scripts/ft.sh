@@ -10,6 +10,8 @@ ftVersion() {
              # Start Testing
   ver="0.03" # Continue adding Test Code
              # Put in Software "Sealing" operation
+  ver="0.04" # Add Test Log File 
+             # Change Individual Functional Test Code to allow easy reordering
 
   echo "$ver"
 }
@@ -54,12 +56,10 @@ ftVersion() {
 
 
 ########################################################################
-# Initialization Code Start 
+# Script Listing/
 ########################################################################
 set -e  # Stop on Errors
 #set -x  # Show all values 
-
-sudo service klipper stop
 
 ########################################################################
 # Setup Environment to execute in the User Home Directory
@@ -137,44 +137,47 @@ inactive=$DARKGRAY
 em=$YELLOW
 re=$LIGHTGRAY
 
-# Color tag definition
-# %b - black, use $DARKGRAY
-# %w - white, use $LIGHTGRAY (Basic color for ASCII Graphics)
-# %y - yellow, use $YELLOW as baasic high light Color
-# %r - red, use $RED
-# %l - light red, use $LIGHTRED
-# %g - green, use $GREEN
-# %c - Blueish/green, use $CYAN
-
 clearScreen() {
   printf "\ec"
 }
-echoGreen(){
-    echo -e "\e[32m${1}\e[0m"
+
+echoE() {
+  echo -e "$1"
+  
+  tempInput="$1"
+  tempOutput=""
+
+  for (( i=0; i <= ${#tempInput}; ++i )); do
+    if [[ "\\" == "${tempInput:$i:1}" ]]; then
+      if [[ "e" == "${tempInput:(($i+1)):1}" ]]; then
+        i=$(($i+7))
+      else
+        tempOutput="$tempOutput${tempInput:$i:1}"
+      fi
+    else
+      tempOutput="$tempOutput${tempInput:$i:1}"
+    fi
+  done
+  
+  logFileImage="$logFileImage\n$tempOutput"
 }
-echoRed(){
-    echo -e "\e[31m${1}\e[0m"
-}
-echoBlue(){
-    echo -e "\e[34m${1}\e[0m"
-}
-echoYellow(){
-    echo -e "\e[33m${1}\e[0m"
-}
+
 drawHeader() {
 headerName="$1"
 
-  clearScreen
 #                        111111111122222222223333333333444444444455555555556666666666
 #              0123456789012345678901234567890123456789012345678901234567890123456789 
-  echo -e "$outline$PHULLSTRING"
+  echoE "$outline$PHULLSTRING"
   version=$(ftVersion) 
   headerLength=${#headerName}
   versionLength=${#version}
   stringLength=$(( displayWidth - ( 4 + 4 + 4 + 1 + versionLength + headerLength )))
-  echo -e "##$highlight  FT $version ${EMPTYSTRING:0:$stringLength} ${1}  $outline##"
+  echoE "##$highlight  FT $version ${EMPTYSTRING:0:$stringLength} ${1}  $outline##"
+  logsLength=${#logFileName}
+  stringLength=$(( displayWidth - ( 4 + 4 + logsLength )))
+  echoE "##$highlight  $logFileName ${EMPTYSTRING:0:$stringLength} $outline##"
 
-  echo -e "$PHULLSTRING$BASE"
+  echoE "$PHULLSTRING$BASE"
 }
 doAppend() {
 #$# $1 strings to display/execute
@@ -187,10 +190,10 @@ doAppend() {
       appendLength=$(( $appendLength - 1 ))
     fi
     stringLength=$(( displayWidth - ( 4 + 4 + 1 + appendLength )))
-    echo -e "$outline##$highlight  $appendString ${EMPTYSTRING:0:$stringLength}  $outline##"
+    echoE "$outline##$highlight  $appendString ${EMPTYSTRING:0:$stringLength}  $outline##"
   done
 
-  echo -e     "$PHULLSTRING$BASE"
+  echoE     "$PHULLSTRING$BASE"
   
   for argument in "$@"; do
     appendString=$argument
@@ -203,14 +206,14 @@ drawError() {
 errorHeaderMessage="$1"
 errorString="$2"
 
-  echo -e "$outline$PHULLSTRING"
-  version=$(ftVersion) 
-  headerLength=${#errorHeaderMessage}
-  versionLength=${#version}
-  stringLength=$(( displayWidth - ( 4 + 4 + 4 + 1 + versionLength + headerLength )))
-  echo -e "##$highlight  FT $version ${EMPTYSTRING:0:$stringLength} $errorHeaderMessage  $outline##"
-  echo -e "$outline$PHULLSTRING
-##                                                                      ##
+  drawHeader "$errorHeaderMessage"
+#  echoE "$outline$PHULLSTRING"
+#  version=$(ftVersion) 
+#  headerLength=${#errorHeaderMessage}
+#  versionLength=${#version}
+#  stringLength=$(( displayWidth - ( 4 + 4 + 4 + 1 + versionLength + headerLength )))
+#  echoE "##$highlight  FT $version ${EMPTYSTRING:0:$stringLength} $errorHeaderMessage  $outline##"
+  echoE "$outline##                                                                      ##
 ##  EEEEEEEEEEE   RRRRRRRR      RRRRRRRR         OOOOO      RRRRRRRR    ##
 ##  EEEEEEEEEEE   RRRRRRRRRR    RRRRRRRRRR     OOOOOOOOO    RRRRRRRRRR  ##
 ##  EEE     EEE   RRR     RRR   RRR     RRR   OOOO   OOOO   RRR     RRR ##
@@ -245,7 +248,7 @@ $PHULLSTRING"
       currentWordLength=${#currentWord}
     done
     stringLength=$(( $displayWidth - ( 4 + 1 + $currentStringLength )))
-    echo -e     "##$highlight $currentString${EMPTYSTRING:0:stringLength}$outline##"
+    echoE     "##$highlight $currentString${EMPTYSTRING:0:stringLength}$outline##"
     currentString=""
     while [ $i -lt $currentStringArraySize ]; do
       if [[ $currentString != "" ]]; then
@@ -257,14 +260,14 @@ $PHULLSTRING"
     done
   done
 
-  echo -e     "$PHULLSTRING$BASE"
+  echoE     "$PHULLSTRING$BASE"
 }
 drawSplashScreen() {
 
   drawHeader "KGP 4x2209 Functional Test"
 #                                       11111111112222222222333333333344444444445555555555666666666677        77
 #                    01         2345678901234567890123456789012345678901234567890123456789012345678901        23 
-  echo -e "$outline##$inactive                                                                      $outline##
+  echoE "$outline##$inactive                                                                      $outline##
 ##$LIGHTRED     #   #  ###  ####           #         ###   ###   ###   ###       $outline##
 ##$LIGHTRED     #  #  #     #   #         ##        #   # #   # #   # #   #      $outline##
 ##$LIGHTRED     # #   #     #   #        # #  #   #     #     # #   # #   #      $outline##
@@ -285,14 +288,15 @@ $PHULLSTRING$BASE"
 }
 drawPASS() {
 
-  echo -e "$outline$PHULLSTRING"
-  version=$(ftVersion) 
-  headerLength=${#errorHeaderMessage}
-  versionLength=${#version}
-  stringLength=$(( displayWidth - ( 4 + 4 + 4 + 1 + versionLength + headerLength )))
-  echo -e "##$highlight  FT $version ${EMPTYSTRING:0:$stringLength} $errorHeaderMessage  $outline##"
-  echo -e "$outline$PHULLSTRING
-##$BLUE                                                                      $outline##
+  drawHeader "$errorHeaderMessage"
+#  echoE "$outline$PHULLSTRING"
+#  version=$(ftVersion) 
+#  headerLength=${#errorHeaderMessage}
+#  versionLength=${#version}
+#  stringLength=$(( displayWidth - ( 4 + 4 + 4 + 1 + versionLength + headerLength )))
+#  echoE "##$highlight  FT $version ${EMPTYSTRING:0:$stringLength} $errorHeaderMessage  $outline##"
+#  echoE "$outline$PHULLSTRING
+  echoE "$outline##$BLUE                                                                      $outline##
 ##$BLUE            ########        ##        ######      ######              $outline##
 ##$BLUE            ########        ##        ######      ######              $outline##
 ##$BLUE            ##      ##    ##  ##    ##      ##  ##      ##            $outline##
@@ -315,26 +319,41 @@ $PHULLSTRING$BASE"
 
 
 ########################################################################
-# Mainline Code Start
+# Mainline Code Start/Setup Log File Name
 ########################################################################
-drawSplashScreen
 
+sudo service klipper stop
+
+logFileImage=""
+currentDateTime=$(date -u "+%F-%H-%M-%S")
+
+logsDirContents=$(ls ~/logs -l)
+mapfile -t logsDirContentsArray <<< "$logsDirContents"
+nextLogsNumber=${#logsDirContentsArray[@]}
+logsNumber="0${nextLogsNumber}"
+while [ 5 -gt ${#logsNumber} ]; do
+  logsNumber="0$logsNumber"
+done
+logFileName="LOG$logsNumber-$currentDateTime.log"
+
+clearScreen
+drawSplashScreen
 
 
 ########################################################################
 # Firmware Load Start
 ########################################################################
 
-echo -e "  "
-echo -e "$outline$PHULLSTRING"
+echoE "  "
+echoE "$outline$PHULLSTRING"
 doAppend "!Firmware Load"
 
 lsusbResponse=$(lsusb)
 
-echo -e "  "
-echo -e "FLS:01"
-echo -e "$lsusbResponse"
-echo -e "  "
+echoE "  "
+echoE "FLS:01"
+echoE "$lsusbResponse"
+echoE "  "
 
 if echo "$lsusbResponse" | grep -q "0483:df11"; then
   loadKatapult=1
@@ -345,9 +364,9 @@ else
   
   katapultResponse=$(ls /dev/serial/by-id) || true
 
-  echo -e "FLS:02"
-  echo -e "$katapultResponse"
-  echo -e "  "
+  echoE "FLS:02"
+  echoE "$katapultResponse"
+  echoE "  "
 
   if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
     loadKatapult=0
@@ -358,9 +377,9 @@ else
         
     lsusbResponse=$(lsusb) || true
 
-    echo -e "FLS:03"
-    echo -e "$lsusbResponse"
-    echo -e "  "
+    echoE "FLS:03"
+    echoE "$lsusbResponse"
+    echoE "  "
 
     if echo "$lsusbResponse" | grep -q "0483:df11"; then
       loadKatapult=1
@@ -382,10 +401,10 @@ if [ 0 -ne $loadKatapult ]; then
   
   katapultResponse=$(ls /dev/serial/by-id) || true
 
-  echo -e "  "
-  echo -e "FLS:04"
-  echo -e "$katapultResponse"
-  echo -e "  "
+  echoE "  "
+  echoE "FLS:04"
+  echoE "$katapultResponse"
+  echoE "  "
 
   if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
     loadKatapult=1
@@ -405,10 +424,10 @@ sleep 1
   
 dfuResponse=$(ls /dev/serial/by-id)
 
-echo -e "  "
-echo -e "FLS:05"
-echo -e "$dfuResponse"
-echo -e "  "
+echoE "  "
+echoE "FLS:05"
+echoE "$dfuResponse"
+echoE "  "
 
 if echo "$dfuResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
   loadKatapult=1
@@ -423,10 +442,10 @@ sleep 1
 
 configFolder=$(ls ~/printer_data/config)
 
-echo -e "  "
-echo -e "FLS:06"
-echo -e "$configFolder"
-echo -e "  "
+echoE "  "
+echoE "FLS:06"
+echoE "$configFolder"
+echoE "  "
 
 if echo "$configFolder" | grep -q "mcu.cfg"; then
   rm ~/printer_data/config/mcu.cfg
@@ -434,9 +453,9 @@ fi
 
 canUUID=$(~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0)
 
-echo -e "FLS:07"
-echo -e "$canUUID"
-echo -e "  "
+echoE "FLS:07"
+echoE "$canUUID"
+echoE "  "
 
 mapfile -t canUUIDArray <<< "$canUUID"
 
@@ -448,9 +467,9 @@ toolheadUUID="${toolheadCfgUUIDArray[1]}"
 toolheadUUID="${toolheadUUID#canbus_uuid: }"
 toolheadUUID="${toolheadUUID%:0:12}"
 
-echo -e "FLS:08"
-echo -e "$toolheadUUID"
-echo -e "  "
+echoE "FLS:08"
+echoE "$toolheadUUID"
+echoE "  "
 
 mcuUUID=""
 i=1
@@ -459,22 +478,22 @@ for arrayElement in "${canUUIDArray[@]}"; do
     arrayElement="${arrayElement#Found canbus_uuid=}"  
     arrayElement="${arrayElement:0:12}"
 
-    echo -e "FLS:09-$i"
+    echoE "FLS:09-$i"
     i=$((i+1))
-    echo -e "$arrayElement"
-    echo -e "  "
+    echoE "$arrayElement"
+    echoE "  "
     
     if [[ "$arrayElement" == "$toolheadUUID" ]]; then
-      echo -e "Match to Toolhead UUID"
+      echoE "Match to Toolhead UUID"
     else
       mcuUUID="$arrayElement"
     fi
   fi
 done
 
-echo -e "FLS:10"
-echo -e "$mcuUUID"
-echo -e "  "
+echoE "FLS:10"
+echoE "$mcuUUID"
+echoE "  "
 
 printf "[mcu]\ncanbus_uuid: $mcuUUID\n" > ~/printer_data/config/mcu.cfg
 
@@ -484,8 +503,8 @@ printf "[mcu]\ncanbus_uuid: $mcuUUID\n" > ~/printer_data/config/mcu.cfg
 # Verify Klipper is Running
 ########################################################################
 
-echo -e "  "
-echo -e "$outline$PHULLSTRING"
+echoE "  "
+echoE "$outline$PHULLSTRING"
 doAppend "!Klipper Startup"
 
 sudo service klipper start
@@ -501,10 +520,10 @@ for ((i=1;10>=i;++i)); do
     if echo "$RESPONSE" | grep -q "Klipper state: Ready"; then
       klipperFlag=1
 
-      echo -e "  "
-      echo -e "VKR:$i"
-      echo -e "STATUS RESPONSE=$RESPONSE"
-      echo -e "  "
+      echoE "  "
+      echoE "VKR:$i"
+      echoE "STATUS RESPONSE=$RESPONSE"
+      echoE "  "
     else
       if echo "$RESPONSE" | grep -q "Can not update MCU 'host' config as it is shutdown"; then
         sleep 2
@@ -515,17 +534,17 @@ for ((i=1;10>=i;++i)); do
         if echo "$RESTART_RESPONSE" | grep -q "Klipper state: Ready"; then
           klipperFlag=1
 
-          echo -e "  "
-          echo -e "VKR:$i"
-          echo -e "FIRMWARE_RESTART RESPONSE=$RESTART_RESPONSE"
-          echo -e "  "
+          echoE "  "
+          echoE "VKR:$i"
+          echoE "FIRMWARE_RESTART RESPONSE=$RESTART_RESPONSE"
+          echoE "  "
         else
-          echo -e "  "
-          echo -e "VKR:$i"
-          echo -e "STATUS RESPONSE=$RESPONSE"
-          echo -e "  "
-          echo -e "Sent FIRMWARE_RESTART"
-          echo -e "  "
+          echoE "  "
+          echoE "VKR:$i"
+          echoE "STATUS RESPONSE=$RESPONSE"
+          echoE "  "
+          echoE "Sent FIRMWARE_RESTART"
+          echoE "  "
         fi
       fi
     fi
@@ -533,9 +552,9 @@ for ((i=1;10>=i;++i)); do
 done
 
 if [ $klipperFlag -eq 1 ]; then
-  echo -e "VKR:Complete"
-  echo -e "Klipper Running"
-  echo -e "  "
+  echoE "VKR:Complete"
+  echoE "Klipper Running"
+  echoE "  "
 else 
   drawError "Klipper Not Starting Up" "Contact Support"
   exit
@@ -547,192 +566,192 @@ fi
 # Functional Tests Follows
 ########################################################################
 
-echo -e "  "
-echo -e "$outline$PHULLSTRING"
+echoE "  "
+echoE "$outline$PHULLSTRING"
 doAppend "!KGP 4x2209 Functional Test"
-echo -e "  "
+echoE "  "
 
 ########################################################################
-# TEST01: Ping
+testNUM="01"  # Ping
 ########################################################################
 
-echo -e "$outline$PHULLSTRING"
-doAppend "!TEST01: Ping"
+echoE "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: Ping"
 
 pingRESPONSE=$(ping -c 2 klipper.discourse.group)
 
 if echo "$pingRESPONSE" | grep -q "klipper.hosted"; then
-  echo "TEST01: Ping Test Complete"
-  echo -e "  "
+  echo "TEST$testNUM: Ping Test Complete"
+  echoE "  "
 else
-  echo -e "  "
-  drawError "TEST01: Ping" "No Response"
+  echoE "  "
+  drawError "TEST$testNUM: Ping" "No Response"
   exit
 fi
 
 ########################################################################
-# TEST02: VINMON
+testNUM="02"  # VINMON
 ########################################################################
 
-echo -e "$outline$PHULLSTRING"
-doAppend "!TEST02: VINMON"
+echoE "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: VINMON"
 
 echo -ne "TEST02\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
-echo -e "$TEST_RESPONSE"
+echoE "$TEST_RESPONSE"
 
 if echo "$TEST_RESPONSE" | grep -q "Test02: VINMON Test: PASS"; then
-  echo "TEST02: VINMON Test Complete"
-  echo -e "  "
+  echo "TEST$testNUM: VINMON Test Complete"
+  echoE "  "
 else
-  echo -e "  "
-  drawError "TEST02: VINMON" "Invalid Voltage Read"
+  echoE "  "
+  drawError "TEST$testNUM: VINMON" "Invalid Voltage Read"
   exit
 fi
 
 ########################################################################
-# TEST03: MCU Temperature
+testNUM="03"  # MCU Temperature
 ########################################################################
 
-echo -e "$outline$PHULLSTRING"
-doAppend "!TEST03: MCU Temperature"
+echoE "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: MCU Temperature"
 
 echo -ne "TEST03\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
-echo -e "$TEST_RESPONSE"
+echoE "$TEST_RESPONSE"
 
 if echo "$TEST_RESPONSE" | grep -q "Test03: MCU Temperature Test: PASS"; then
-  echo "TEST03: MCU Temperature Test Complete"
-  echo -e "  "
+  echo "TEST$testNUM: MCU Temperature Test Complete"
+  echoE "  "
 else
-  echo -e "  "
-  drawError "TEST03: MCU Temperature Test" "Invalid MCU Temperature Value Read"
+  echoE "  "
+  drawError "TEST$testNUM: MCU Temperature Test" "Invalid MCU Temperature Value Read"
   exit
 fi
 
 ########################################################################
-# TEST04: Toolhead Temperature
+testNUM="04"  # Toolhead Temperature
 ########################################################################
 
-echo -e "$outline$PHULLSTRING"
-doAppend "!TEST04: Toolhead Temperature"
+echoE "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: Toolhead Temperature"
 
 echo -ne "TEST04\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
-echo -e "$TEST_RESPONSE"
+echoE "$TEST_RESPONSE"
 
 if echo "$TEST_RESPONSE" | grep -q "Test04: Toolhead Temperature Test: PASS"; then
-  echo "TEST04: Toolhead Temperature Test Complete"
-  echo -e "  "
+  echo "TEST$testNUM: Toolhead Temperature Test Complete"
+  echoE "  "
 else
-  echo -e "  "
-  drawError "TEST04: Toolhead Temperature Test" "Invalid Toolhead Temperature Value Read"
+  echoE "  "
+  drawError "TEST$testNUM: Toolhead Temperature Test" "Invalid Toolhead Temperature Value Read"
   exit
 fi
 
 ########################################################################
-# TEST05: THERMO0 Temperature
+testNUM="05"  # THERMO0 Temperature
 ########################################################################
 
-echo -e "$outline$PHULLSTRING"
-doAppend "!TEST05: THERMO0 Temperature"
+echoE "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: THERMO0 Temperature"
 
 echo -ne "TEST05\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
-echo -e "$TEST_RESPONSE"
+echoE "$TEST_RESPONSE"
 
 if echo "$TEST_RESPONSE" | grep -q "Test05: THERMO0 Test: PASS"; then
-  echo "TEST05: THERMO0 Temperature Test Complete"
-  echo -e "  "
+  echo "TEST$testNUM: THERMO0 Temperature Test Complete"
+  echoE "  "
 else
   if echo "$TEST_RESPONSE" | grep -q "Test05: Check THERMO0 Connection to Thermistor"; then
-    echo -e "  "
-    drawError "TEST05: THERMO0 Temperature Test" "Check Thermistor THERMO0 Connection to Board Under Test"
+    echoE "  "
+    drawError "TEST$testNUM: THERMO0 Temperature Test" "Check Thermistor THERMO0 Connection to Board Under Test"
     exit
   else
-    echo -e "  "
-    drawError "TEST05: THERMO0 Temperature Test" "Invalid Thermistor Temperature Value Read"
+    echoE "  "
+    drawError "TEST$testNUM: THERMO0 Temperature Test" "Invalid Thermistor Temperature Value Read"
     exit
   fi
 fi
 
 ########################################################################
-# TEST06: THERMO1 Temperature
+testNUM="06"  # THERMO1 Temperature
 ########################################################################
 
-echo -e "$outline$PHULLSTRING"
-doAppend "!TEST06: THERMO1 Temperature"
+echoE "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: THERMO1 Temperature"
 
 echo -ne "TEST06\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
-echo -e "$TEST_RESPONSE"
+echoE "$TEST_RESPONSE"
 
 if echo "$TEST_RESPONSE" | grep -q "Test06: THERMO1 Test: PASS"; then
-  echo "TEST06: THERMO0 Temperature Test Complete"
-  echo -e "  "
+  echo "TEST$testNUM: THERMO0 Temperature Test Complete"
+  echoE "  "
 else
   if echo "$TEST_RESPONSE" | grep -q "Test06: Check THERMO1 Connection to Thermistor"; then
-    echo -e "  "
-    drawError "TEST06: THERMO1 Temperature Test" "Check Thermistor THERMO1 Connection to Board Under Test"
+    echoE "  "
+    drawError "TEST$testNUM: THERMO1 Temperature Test" "Check Thermistor THERMO1 Connection to Board Under Test"
     exit
   else
-    echo -e "  "
-    drawError "TEST06: THERMO1 Temperature Test" "Invalid Thermistor Temperature Value Read"
+    echoE "  "
+    drawError "TEST$testNUM: THERMO1 Temperature Test" "Invalid Thermistor Temperature Value Read"
     exit
   fi
 fi
 
 ########################################################################
-# TEST07: Set HEATER0 Temperature to 40C
+testNUM="07"  # Set HEATER0 Temperature to 40C
 ########################################################################
 
-echo -e "$outline$PHULLSTRING"
-doAppend "!TEST07: Set HEATER0 Temperature to 40C"
+echoE "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: Set HEATER0 Temperature to 40C"
 
 echo -ne "TEST07\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
-echo -e "$TEST_RESPONSE"
+echoE "$TEST_RESPONSE"
 
 if echo "$TEST_RESPONSE" | grep -q "Test07: HEATER0 Set to 40"; then
-  echo "TEST07: Set HEATER0 Temperature to 40C"
-  echo -e "  "
+  echo "TEST$testNUM: Set HEATER0 Temperature to 40C"
+  echoE "  "
 else
-  echo -e "  "
-  drawError "TEST07: Set HEATER0 Temperature to 40C" "Unable to Set HEATER0 Temperature"
+  echoE "  "
+  drawError "TEST$testNUM: Set HEATER0 Temperature to 40C" "Unable to Set HEATER0 Temperature"
   exit
 fi
 
 ########################################################################
-# TEST08: Set HEATER1 Temperature to 40C
+testNUM="08"  # Set HEATER1 Temperature to 40C
 ########################################################################
 
-echo -e "$outline$PHULLSTRING"
-doAppend "!TEST08: Set HEATER1 Temperature to 40C"
+echoE "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: Set HEATER1 Temperature to 40C"
 
 echo -ne "TEST08\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
-echo -e "$TEST_RESPONSE"
+echoE "$TEST_RESPONSE"
 
 if echo "$TEST_RESPONSE" | grep -q "Test08: HEATER1 Set to 40"; then
-  echo "TEST08: Set HEATER1 Temperature to 40C"
-  echo -e "  "
+  echo "TEST$testNUM: Set HEATER1 Temperature to 40C"
+  echoE "  "
 else
-  echo -e "  "
-  drawError "TEST08: Set HEATER1 Temperature to 40C" "Unable to Set HEATER1 Temperature"
+  echoE "  "
+  drawError "TEST$testNUM: Set HEATER1 Temperature to 40C" "Unable to Set HEATER1 Temperature"
   exit
 fi
 
@@ -743,7 +762,14 @@ fi
 
 
 
+
+########################################################################
+## Turn Heaters off to ensure they're not left on
+########################################################################
+
 heatersOff
+
+echo -e "$logFileImage" > ~/logs/$logFileName
 
 ########################################################################
 ## Tests Complete: Halt Here so Sealing Operation doesn't Cause Testing Issues
@@ -755,7 +781,7 @@ exit
 ## Tests Complete: Software Sealing
 ########################################################################
 
-echo -e "$outline$PHULLSTRING"
+echoE "$outline$PHULLSTRING"
 doAppend "!Software Sealing"
 
 python ~/python/enableKatapult.py
@@ -764,9 +790,9 @@ sleep 1
   
 katapultResponse=$(ls /dev/serial/by-id) || true
 
-echo -e "SSS:02"
-echo -e "$katapultResponse"
-echo -e "  "
+echoE "SSS:01"
+echoE "$katapultResponse"
+echoE "  "
 
 if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
   python3 ~/katapult/scripts/flashtool.py -f ~/bin/nada.bin -d /dev/serial/by-id/$katapultResponse
@@ -779,18 +805,18 @@ if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
  
   katapultResponse=$(ls /dev/serial/by-id) || true
 
-  echo -e " "
-  echo -e "$katapultResponse"
+  echoE " "
+  echoE "$katapultResponse"
 
-  echo -e " "
+  echoE " "
   drawPASS   
    
 #### - Need to Set NeoPixels to BLUE
-  echo -e " "
-  echo -e "#### Need to Set NeoPixels to BLUE"
+  echoE " "
+  echoE "#### Need to Set NeoPixels to BLUE"
   
 else
-  echo -e "  "
+  echoE "  "
   drawError "Software Sealing" "Unable to Start Katapult"
 fi
 
