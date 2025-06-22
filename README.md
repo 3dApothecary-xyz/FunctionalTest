@@ -34,6 +34,18 @@
 * Company Supplied: 2x Custom Motor Base with Striker
 * Company Supplied: 4x Lerdge NEMA 17 42mm Motors with Dupont Connectors
 
+## Functional Test Electrical Setup Process
+
+![Step 1](images/Functional_Test_Setup-Step_1.png)
+
+![Step 2](images/Functional_Test_Setup-Step_2.png)
+
+![Step 3](images/Functional_Test_Setup-Step_3.png)
+
+![Step 4](images/Functional_Test_Setup-Step_4.png)
+
+![Step 5](images/Functional_Test_Setup-Step_5.png)
+
 ## Functional Test Process
 
 * `sudo service klipper stop`
