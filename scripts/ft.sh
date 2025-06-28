@@ -180,7 +180,7 @@ headerName="$1"
   stringLength=$(( displayWidth - ( 4 + 4 + logsLength )))
   echo -e "##$highlight  $logFileName ${EMPTYSTRING:0:$stringLength} $outline##"
 
-  echo -3 "$PHULLSTRING$BASE"
+  echo -e "$PHULLSTRING$BASE"
 }
 doAppend() {
 #$# $1 strings to display/execute
@@ -304,7 +304,7 @@ $PHULLSTRING"
 
   echo -e "$PHULLSTRING$BASE"
 }
-drawLED() {
+checkLED() {
 
   testNumber="$1"
   promptMsg=""
@@ -450,10 +450,10 @@ drawLED() {
     indCONN="$DARKGRAY"
   fi
 
-  drawLEDSpace=$((${#PHULLSTRING} - (8 + 4 + 2 + 2 + ${#promptMsg})))
+  checkLEDSpace=$((${#PHULLSTRING} - (8 + 4 + 2 + 2 + ${#promptMsg})))
 
   echo -e "$outline$PHULLSTRING
-##$highlight  TEST$testNumber: $promptMsg ${EMPTYSTRING:0:drawLEDSpace} $outline##
+##$highlight  TEST$testNumber: $promptMsg ${EMPTYSTRING:0:checkLEDSpace} $outline##
 $PHULLSTRING
 ##$DARKGRAY      /----------|---|$dsCONN0|--|$DARKGRAY|---||--$fan0CONN|-|$heater0CONN|OO|$DARKGRAY|-|-|---|-|-----|-----\      $outline##
 ##$DARKGRAY      $dsCONN1-|$DARKGRAY$dsLED1 O $DARKGRAY       --- $dsCONN0 -- $DARKGRAY ---  --$fan0LED O$heater0CONN |__| $DARKGRAY   |   | |     |     |      $outline##
@@ -801,14 +801,13 @@ echo -e  "$outline$PHULLSTRING"
 doAppend "!TEST$testNUM: VINMON"
 logFileImage="$logFileImage\nTEST$testNUM: VINMON"
 
-echo -ne "TEST02\n" > "$TTY" || true
+echo -ne "TESTMACRO01\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echoE "$TEST_RESPONSE"
 
-if echo "$TEST_RESPONSE" | grep -q "Test02: VINMON Test: PASS"; then
-  echoE   "TEST$testNUM: VINMON Test Complete"
+if echo "$TEST_RESPONSE" | grep -q "TestMacro01: VINMON Test: PASS"; then
   echoE "  "
 else
   echoE "  "
@@ -825,14 +824,13 @@ echo -e  "$outline$PHULLSTRING"
 doAppend "!TEST$testNUM: MCU Temperature"
 logFileImage="$logFileImage\nTEST$testNUM: MCU Temperature"
 
-echo -ne "TEST03\n" > "$TTY" || true
+echo -ne "TESTMACRO02\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echoE "$TEST_RESPONSE"
 
-if echo "$TEST_RESPONSE" | grep -q "Test03: MCU Temperature Test: PASS"; then
-  echoE "TEST$testNUM: MCU Temperature Test Complete"
+if echo "$TEST_RESPONSE" | grep -q "TestMacro02: MCU Temperature Test: PASS"; then
   echoE "  "
 else
   echoE "  "
@@ -849,14 +847,13 @@ echo -e  "$outline$PHULLSTRING"
 doAppend "!TEST$testNUM: Toolhead Temperature"
 logFileImage="$logFileImage\nTEST$testNUM: Toolhead Temperature"
 
-echo -ne "TEST04\n" > "$TTY" || true
+echo -ne "TESTMACRO03\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echoE "$TEST_RESPONSE"
 
-if echo "$TEST_RESPONSE" | grep -q "Test04: Toolhead Temperature Test: PASS"; then
-  echoE "TEST$testNUM: Toolhead Temperature Test Complete"
+if echo "$TEST_RESPONSE" | grep -q "TestMacro03: Toolhead Temperature Test: PASS"; then
   echoE "  "
 else
   echoE "  "
@@ -873,17 +870,16 @@ echo -e  "$outline$PHULLSTRING"
 doAppend "!TEST$testNUM: THERMO0 Temperature"
 logFileImage="$logFileImage\nTEST$testNUM: THERMO0 Temperature"
 
-echo -ne "TEST05\n" > "$TTY" || true
+echo -ne "TESTMACRO04\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echoE "$TEST_RESPONSE"
 
-if echo "$TEST_RESPONSE" | grep -q "Test05: THERMO0 Test: PASS"; then
-  echoE "TEST$testNUM: THERMO0 Temperature Test Complete"
+if echo "$TEST_RESPONSE" | grep -q "TestMacro04: THERMO0 Test: PASS"; then
   echoE "  "
 else
-  if echo "$TEST_RESPONSE" | grep -q "Test05: Check THERMO0 Connection to Thermistor"; then
+  if echo "$TEST_RESPONSE" | grep -q "TestMacro04: Check THERMO0 Connection to Thermistor"; then
     echoE "  "
     drawError "TEST$testNUM: THERMO0 Temperature Test" "Check Thermistor THERMO0 Connection to Board Under Test"
     logFileImage="$logFileImage\nTEST$testNUM: Check Thermistor THERMO0 Connection to Board Under Test"
@@ -904,17 +900,16 @@ echo -e  "$outline$PHULLSTRING"
 doAppend "!TEST$testNUM: THERMO1 Temperature"
 logFileImage="$logFileImage\nTEST$testNUM: THERMO1 Temperature"
 
-echo -ne "TEST06\n" > "$TTY" || true
+echo -ne "TESTMACRO05\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echoE "$TEST_RESPONSE"
 
-if echo "$TEST_RESPONSE" | grep -q "Test06: THERMO1 Test: PASS"; then
-  echoE "TEST$testNUM: THERMO0 Temperature Test Complete"
+if echo "$TEST_RESPONSE" | grep -q "TestMacro05: THERMO1 Test: PASS"; then
   echoE "  "
 else
-  if echo "$TEST_RESPONSE" | grep -q "Test06: Check THERMO1 Connection to Thermistor"; then
+  if echo "$TEST_RESPONSE" | grep -q "TestMacro05: Check THERMO1 Connection to Thermistor"; then
     echoE "  "
     drawError "TEST$testNUM: THERMO1 Temperature Test" "Check Thermistor THERMO1 Connection to Board Under Test"
     logFileImage="$logFileImage\nTEST$testNUM: Check Thermistor THERMO1 Connection to Board Under Test"
@@ -935,14 +930,13 @@ echo -e  "$outline$PHULLSTRING"
 doAppend "!TEST$testNUM: Set HEATER0 Temperature to 40C"
 logFileImage="$logFileImage\nTEST$testNUM: Set HEATER0 Temperature to 40C"
 
-echo -ne "TEST07\n" > "$TTY" || true
+echo -ne "TESTMACRO06\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echoE "$TEST_RESPONSE"
 
-if echo "$TEST_RESPONSE" | grep -q "Test07: HEATER0 Set to 40"; then
-  echoE "TEST$testNUM: Set HEATER0 Temperature to 40C"
+if echo "$TEST_RESPONSE" | grep -q "TestMacro06: HEATER0 Set to 40"; then
   echoE "  "
 else
   echoE "  "
@@ -960,19 +954,42 @@ echo -e  "$outline$PHULLSTRING"
 doAppend "!TEST$testNUM: Set HEATER1 Temperature to 40C"
 logFileImage="$logFileImage\nTEST$testNUM: Set HEATER1 Temperature to 40C"
 
-echo -ne "TEST08\n" > "$TTY" || true
+echo -ne "TESTMACRO07\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echoE "$TEST_RESPONSE"
 
-if echo "$TEST_RESPONSE" | grep -q "Test08: HEATER1 Set to 40"; then
-  echoE "TEST$testNUM: Set HEATER1 Temperature to 40C"
+if echo "$TEST_RESPONSE" | grep -q "TestMacro07: HEATER1 Set to 40"; then
   echoE "  "
 else
   echoE "  "
   drawError "TEST$testNUM: Set HEATER1 Temperature to 40C" "Unable to Set HEATER1 Temperature"
   logFileImage="$logFileImage\nTEST$testNUM: Unable to Set HEATER1 Temperature"
+  heatersOff
+  exit
+fi
+
+########################################################################
+testNUM="09"  # Check ADXL345 Presence
+########################################################################
+
+echo -e  "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: Check ADXL345 Presenece"
+logFileImage="$logFileImage\nTEST$testNUM: Check ADXL345 Presenece"
+
+echo -ne "READ_ADXL\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+echoE "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "READ_ADXL: ADXL345 Present"; then
+  echoE "  "
+else
+  echoE "  "
+  drawError "TEST$testNUM: No ADXL345 Detected"
+  logFileImage="$logFileImage\nTEST$testNUM: No ADXL345 Detected"
   heatersOff
   exit
 fi
@@ -1048,10 +1065,14 @@ else
 fi
 
 echoE " "
-yN=$(drawLED "01" "1")
+yN=$(checkLED "01" "1")
 
 echoE " "
 echoE "Yes/No Response is: $yN"
+
+replResponse=$(~/klippy-env/bin/klipper-repl /home/biqu/printer_data/comms/klippy.sock accelerometer_query) || true
+
+echo -e "klipper-repl Response=$replResponse"
 
 echo -e "$logFileImage" > ~/logs/$logFileName
 
