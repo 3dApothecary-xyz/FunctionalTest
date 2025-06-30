@@ -14,6 +14,8 @@ ftVersion() {
              # Change Individual Functional Test Code to allow easy reordering
   ver="0.05" # Adding LED Check Screen Method
              # Added "trap '' SIGINT" to Prevent User from Ctrl-C
+  ver="0.06" # Reorganizing Tests to better match the workflow
+             # Instituting Dynamic Macros to the tests
 
   echo "$ver"
 }
@@ -465,7 +467,7 @@ $PHULLSTRING
 ##$DARKGRAY      -    |_|  |____|                                         |      $outline##
 ##$DARKGRAY      $dsCONN2-|$DARKGRAY$dsLED2 O $DARKGRAY  $boot0LED O $DARKGRAY   $resetLED O $DARKGRAY                                         |      $outline##
 ##$DARKGRAY      $dsCONN2-|$DARKGRAY    $boot0Button |_| $DARKGRAY  |_|                       _________________ |      $outline##
-##$DARKGRAY      -                              __    /                  \|      $outline##
+##$DARKGRAY      -    $boot0Button BOOT0 $DARKGRAY                   __    /                  \|      $outline##
 ##$DARKGRAY      ||                            |  |   |                  ||      $outline##
 ##$DARKGRAY      -               $dsLED3 O$dsCONN3 _ $DARKGRAY         |__|   |                  ||      $outline##
 ##$DARKGRAY     $heater1CONN - $DARKGRAY      _      $dsCONN3 |___| $DARKGRAY         __    |                  ||      $outline##
@@ -533,6 +535,28 @@ logFileName="LOG$logsNumber-$currentDateTime.log"
 
 clearScreen
 drawSplashScreen
+
+
+########################################################################
+testNUM="01"  # Ping/Moved to start of tests as primary requirement
+########################################################################
+
+echoE "  "
+echo -e  "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: Ping"
+logFileImage="$logFileImage\nTEST$testNUM: Ping"
+
+pingRESPONSE=$(ping -c 2 klipper.discourse.group)
+
+if echo "$pingRESPONSE" | grep -q "klipper.hosted"; then
+  echoE   "TEST$testNUM: Ping Test Complete"
+  echoE "  "
+else
+  echoE "  "
+  drawError "TEST$testNUM: Ping" "No Response"
+  logFileImage="$logFileImage\nTEST$testNUM: Ping No Response"
+  exit
+fi
 
 
 ########################################################################
@@ -617,8 +641,66 @@ python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/seri
 sleep 1
     
 python ~/python/enableKatapult.py
-  
-sleep 1
+
+
+
+########################################################################
+testNUM="02"  # Check Power LED Lit
+########################################################################
+
+echoE " "
+Yn=$(checkLED "$testNUM" "1")
+
+if [[ "Y" == "$Yn" ]]; then
+  echoE "  "
+  echoE   "TEST$testNUM: Power LED Active"
+  echoE "  "
+else
+  echoE "  "
+  drawError "TEST$testNUM: Power LED Active Check" "LED Not Lit"
+  logFileImage="$logFileImage\nTEST$testNUM: Power LED Active Check: LED Not Lit"
+  exit
+fi
+
+
+########################################################################
+testNUM="03"  # Check DFU LED Lit
+########################################################################
+
+echoE " "
+Yn=$(checkLED "$testNUM" "3")
+
+if [[ "Y" == "$Yn" ]]; then
+  echoE "  "
+  echoE   "TEST$testNUM: DFU LED Flashing"
+  echoE "  "
+else
+  echoE "  "
+  drawError "TEST$testNUM: DFU LED Active Check" "LED Not Lit/Flashing"
+  logFileImage="$logFileImage\nTEST$testNUM: DFU LED Active Check: LED Not Lit/Flashing"
+  exit
+fi
+
+
+########################################################################
+testNUM="04"  # Check STATUS LED Operation and BOOT0 Button
+########################################################################
+
+echoE " "
+Yn=$(checkLED "$testNUM" "2")
+
+if [[ "Y" == "$Yn" ]]; then
+  echoE "  "
+  echoE   "TEST$testNUM: STATUS LED & Button Operating Normally"
+  echoE "  "
+else
+  echoE "  "
+  drawError "TEST$testNUM: STATUS LED Operation Check" "LED Not Lighting when BOOT0 Button Pressed"
+  logFileImage="$logFileImage\nTEST$testNUM: STATUS LED Operation Check: LED Not Lighting when BOOT0 Button Pressed"
+  exit
+fi
+
+
   
 dfuResponse=$(ls /dev/serial/by-id)
 
@@ -764,37 +846,13 @@ fi
 
 
 ########################################################################
-# Functional Tests Follows
+# Functional Tests Continue
 ########################################################################
 
-echoE "  "
-echo -e  "$outline$PHULLSTRING"
-doAppend "!KGP 4x2209 Functional Test"
-logFileImage="$logFileImage\nKGP 4x2209 Functional Test"
-echoE "  "
+sleep 2
 
 ########################################################################
-testNUM="01"  # Ping
-########################################################################
-
-echo -e  "$outline$PHULLSTRING"
-doAppend "!TEST$testNUM: Ping"
-logFileImage="$logFileImage\nTEST$testNUM: Ping"
-
-pingRESPONSE=$(ping -c 2 klipper.discourse.group)
-
-if echo "$pingRESPONSE" | grep -q "klipper.hosted"; then
-  echoE   "TEST$testNUM: Ping Test Complete"
-  echoE "  "
-else
-  echoE "  "
-  drawError "TEST$testNUM: Ping" "No Response"
-  logFileImage="$logFileImage\nTEST$testNUM: Ping No Response"
-  exit
-fi
-
-########################################################################
-testNUM="02"  # VINMON
+testNUM="05"  # VINMON
 ########################################################################
 
 echo -e  "$outline$PHULLSTRING"
@@ -810,14 +868,13 @@ echoE "$TEST_RESPONSE"
 if echo "$TEST_RESPONSE" | grep -q "TestMacro01: VINMON Test: PASS"; then
   echoE "  "
 else
-  echoE "  "
   drawError "TEST$testNUM: VINMON" "Invalid Voltage Read"
   logFileImage="$logFileImage\nTEST$testNUM: VINMON Invalid Voltage Read"
   exit
 fi
 
 ########################################################################
-testNUM="03"  # MCU Temperature
+testNUM="06"  # MCU Temperature
 ########################################################################
 
 echo -e  "$outline$PHULLSTRING"
@@ -833,14 +890,13 @@ echoE "$TEST_RESPONSE"
 if echo "$TEST_RESPONSE" | grep -q "TestMacro02: MCU Temperature Test: PASS"; then
   echoE "  "
 else
-  echoE "  "
   drawError "TEST$testNUM: MCU Temperature Test" "Invalid MCU Temperature Value Read"
   logFileImage="$logFileImage\nTEST$testNUM: Invalid MCU Temperature Value Read"
   exit
 fi
 
 ########################################################################
-testNUM="04"  # Toolhead Temperature
+testNUM="07"  # Toolhead Temperature
 ########################################################################
 
 echo -e  "$outline$PHULLSTRING"
@@ -856,14 +912,13 @@ echoE "$TEST_RESPONSE"
 if echo "$TEST_RESPONSE" | grep -q "TestMacro03: Toolhead Temperature Test: PASS"; then
   echoE "  "
 else
-  echoE "  "
   drawError "TEST$testNUM: Toolhead Temperature Test" "Invalid Toolhead Temperature Value Read"
   logFileImage="$logFileImage\nTEST$testNUM: Invalid Toolhead Temperature Value Read"
   exit
 fi
 
 ########################################################################
-testNUM="05"  # THERMO0 Temperature
+testNUM="08"  # THERMO0 Temperature
 ########################################################################
 
 echo -e  "$outline$PHULLSTRING"
@@ -880,12 +935,10 @@ if echo "$TEST_RESPONSE" | grep -q "TestMacro04: THERMO0 Test: PASS"; then
   echoE "  "
 else
   if echo "$TEST_RESPONSE" | grep -q "TestMacro04: Check THERMO0 Connection to Thermistor"; then
-    echoE "  "
     drawError "TEST$testNUM: THERMO0 Temperature Test" "Check Thermistor THERMO0 Connection to Board Under Test"
     logFileImage="$logFileImage\nTEST$testNUM: Check Thermistor THERMO0 Connection to Board Under Test"
     exit
   else
-    echoE "  "
     drawError "TEST$testNUM: THERMO0 Temperature Test" "Invalid THERMO0 Thermistor Temperature Value Read"
     logFileImage="$logFileImage\nTEST$testNUM: Invalid THERMO0 Thermistor Temperature Value Read"
     exit
@@ -893,7 +946,7 @@ else
 fi
 
 ########################################################################
-testNUM="06"  # THERMO1 Temperature
+testNUM="09"  # THERMO1 Temperature
 ########################################################################
 
 echo -e  "$outline$PHULLSTRING"
@@ -910,12 +963,10 @@ if echo "$TEST_RESPONSE" | grep -q "TestMacro05: THERMO1 Test: PASS"; then
   echoE "  "
 else
   if echo "$TEST_RESPONSE" | grep -q "TestMacro05: Check THERMO1 Connection to Thermistor"; then
-    echoE "  "
     drawError "TEST$testNUM: THERMO1 Temperature Test" "Check Thermistor THERMO1 Connection to Board Under Test"
     logFileImage="$logFileImage\nTEST$testNUM: Check Thermistor THERMO1 Connection to Board Under Test"
     exit
   else
-    echoE "  "
     drawError "TEST$testNUM: THERMO1 Temperature Test" "Invalid Thermistor Temperature Value Read"
     logFileImage="$logFileImage\nTEST$testNUM: Invalid THERMO1 Thermistor Temperature Value Read"
     exit
@@ -923,7 +974,7 @@ else
 fi
 
 ########################################################################
-testNUM="07"  # Set HEATER0 Temperature to 40C
+testNUM="10"  # Set HEATER0 Temperature to 40C
 ########################################################################
 
 echo -e  "$outline$PHULLSTRING"
@@ -939,7 +990,6 @@ echoE "$TEST_RESPONSE"
 if echo "$TEST_RESPONSE" | grep -q "TestMacro06: HEATER0 Set to 40"; then
   echoE "  "
 else
-  echoE "  "
   drawError "TEST$testNUM: Set HEATER0 Temperature to 40C" "Unable to Set HEATER0 Temperature"
   logFileImage="$logFileImage\nTEST$testNUM: Unable to Set HEATER0 Temperature"
   heatersOff
@@ -947,7 +997,7 @@ else
 fi
 
 ########################################################################
-testNUM="08"  # Set HEATER1 Temperature to 40C
+testNUM="11"  # Set HEATER1 Temperature to 40C
 ########################################################################
 
 echo -e  "$outline$PHULLSTRING"
@@ -963,7 +1013,6 @@ echoE "$TEST_RESPONSE"
 if echo "$TEST_RESPONSE" | grep -q "TestMacro07: HEATER1 Set to 40"; then
   echoE "  "
 else
-  echoE "  "
   drawError "TEST$testNUM: Set HEATER1 Temperature to 40C" "Unable to Set HEATER1 Temperature"
   logFileImage="$logFileImage\nTEST$testNUM: Unable to Set HEATER1 Temperature"
   heatersOff
@@ -971,14 +1020,14 @@ else
 fi
 
 ########################################################################
-testNUM="09"  # Check ADXL345 Presence
+testNUM="12"  # Check ADXL345 Presence
 ########################################################################
 
 echo -e  "$outline$PHULLSTRING"
 doAppend "!TEST$testNUM: Check ADXL345 Presenece"
 logFileImage="$logFileImage\nTEST$testNUM: Check ADXL345 Presenece"
 
-echo -ne "READ_ADXL\n" > "$TTY" || true
+echo -ne "DMTESTMACRO01\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
@@ -987,7 +1036,29 @@ echoE "$TEST_RESPONSE"
 if echo "$TEST_RESPONSE" | grep -q "READ_ADXL: ADXL345 Present"; then
   echoE "  "
 else
+  drawError "TEST$testNUM: No BLTouch Detected"
+  logFileImage="$logFileImage\nTEST$testNUM: No BLTouch Detected"
+  heatersOff
+  exit
+fi
+
+########################################################################
+testNUM="13"  # Check BLTouch Presence
+########################################################################
+
+echo -e  "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: Check BLTouch Presenece"
+logFileImage="$logFileImage\nTEST$testNUM: Check BLTouch Presenece"
+
+echo -ne "DMTESTMACRO02\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+echoE "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "BLT Object=0"; then
   echoE "  "
+else
   drawError "TEST$testNUM: No ADXL345 Detected"
   logFileImage="$logFileImage\nTEST$testNUM: No ADXL345 Detected"
   heatersOff
@@ -1063,16 +1134,6 @@ else
   echoE " "
   drawPASS   
 fi
-
-echoE " "
-yN=$(checkLED "01" "1")
-
-echoE " "
-echoE "Yes/No Response is: $yN"
-
-replResponse=$(~/klippy-env/bin/klipper-repl /home/biqu/printer_data/comms/klippy.sock accelerometer_query) || true
-
-echo -e "klipper-repl Response=$replResponse"
 
 echo -e "$logFileImage" > ~/logs/$logFileName
 
