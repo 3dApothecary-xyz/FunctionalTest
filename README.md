@@ -391,12 +391,20 @@ install_script: install.sh
     * `cd ~/DynamicMacros`
     * `sh install.sh`
     * `sudo service klipper restart`
-   
-**NOTE:** Will have to load `dynamic.cfg`, `read_adxl.py` and any other required python files used in Dynamic Macros
+
+57. 
+    * `cd printer_data/config`
+    * `wget -O dynamic.cfg https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/configs/dynamic.cfg?raw=true`
+    * `wget -O read_adxl.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/configs/read_adxl.py?raw=true`
+    * `wget -O read_blt.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/configs/read_blt.py?raw=true`
+    * `wget -O read_tmc_field.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/configs/read_tmc_field.py?raw=true`
+    * `chmod 777 dynamic.cfg`
+    * `chmod 777 *.py`
+    * `cd ~`
 
 ### Make Firmware Images
 
-57. Download Premade Firmare Images
+58. Download Premade Firmare Images
     * `mkdir bin`
     * `cd bin`
     * `wget -O nada.bin https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/bin/nada.bin?raw=true`
@@ -414,7 +422,7 @@ install_script: install.sh
     * `cp out/katapult.bin ~/bin`
     * `cd ~`
 
-59. Make `klipper.bin` for Board Under Test 
+60. Make `klipper.bin` for Board Under Test 
     * `cd klipper`
     * `make menuconfig` - Match settings with screen shot below and enter `Q` followed by `Y` to save
 ![Katapult menuconfig settings](images/klipper_menuconfig_2.png)
@@ -423,116 +431,116 @@ install_script: install.sh
     * `cp out/klipper.bin ~/bin`
     * `cd ~`
 
-60. `chmod 777 bin/*.bin`
+61. `chmod 777 bin/*.bin`
 
 ### Flash MCU on KGP 4x2209
 
-61. Stop Klipper while Flashing the KGP 4x2209 using `sudo service klipper stop`
+62. Stop Klipper while Flashing the KGP 4x2209 using `sudo service klipper stop`
     
-62. `lsusb` and check to see that there is a device with "ID" `0483:df11`:
+63. `lsusb` and check to see that there is a device with "ID" `0483:df11`:
 
 ![KGP 4x2209 Initial DFU Mode Check](images/KGP_4x2209_DFU_Mode.png)
 
-63. Flash Katapult into the KGP 4x2209 board using the command: `sudo dfu-util -a 0 -D ~/katapult/out/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11`
+64. Flash Katapult into the KGP 4x2209 board using the command: `sudo dfu-util -a 0 -D ~/katapult/out/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11`
 
-64. Check for Katapult active by verifying the flashing LED on KGP 4x2209 and use the `ls /dev/serial/by-id` to check if has a USB address using `ls /dev/serial/by-id`
+65. Check for Katapult active by verifying the flashing LED on KGP 4x2209 and use the `ls /dev/serial/by-id` to check if has a USB address using `ls /dev/serial/by-id`
 
 ![Katapult Active](images/Katapult_Active.png)
 
-65. Using the USB Serial Address found in the Previous Step, Flash the DFU Mode Enable firmware using the command `python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/serial/by-id/usb-katapult_stm32g0b1xx_1A003E001050505933383420-if00` (which is using the USB address found previously)
+66. Using the USB Serial Address found in the Previous Step, Flash the DFU Mode Enable firmware using the command `python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/serial/by-id/usb-katapult_stm32g0b1xx_1A003E001050505933383420-if00` (which is using the USB address found previously)
 
-66. This will result in the DFU repeatedly Flashing three times quickly followed by one lone flash
+67. This will result in the DFU repeatedly Flashing three times quickly followed by one lone flash
 
-67. `python ~/python/enableKatapult.py` which will enable Katapult and the DFU LED will flash on and off regularly
+68. `python ~/python/enableKatapult.py` which will enable Katapult and the DFU LED will flash on and off regularly
     
-68. Using the USB Serial Address found in the Previous Steps, Flash Klipper using the command `python3 ~/katapult/scripts/flashtool.py -f ~/bin/klipper.bin -d /dev/serial/by-id/usb-katapult_stm32g0b1xx_1A003E001050505933383420-if00` (which is using the USB address found previously)
+69. Using the USB Serial Address found in the Previous Steps, Flash Klipper using the command `python3 ~/katapult/scripts/flashtool.py -f ~/bin/klipper.bin -d /dev/serial/by-id/usb-katapult_stm32g0b1xx_1A003E001050505933383420-if00` (which is using the USB address found previously)
 
-69. Check to see that Klipper was installed using the command 'ip -s -d link show can0` with the expected result:
+70. Check to see that Klipper was installed using the command 'ip -s -d link show can0` with the expected result:
 
 ![Klipper Flashed into KGP 4x2209](images/CAN_Link_Active.png)
 
-70. Get the CAN UUID using the command: `~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0` with the expected result:
+71. Get the CAN UUID using the command: `~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0` with the expected result:
 
 ![Klipper CAN Bus UUID](images/CAN_UUID.png)
 
-71. Create an `mcu.cfg` file using the command: `printf "[mcu]\ncanbus_uuid: fc86d6d0415a\n" > ~/printer_data/config/mcu.cfg` with the correct UUID for the KGP 4x2209 that was found previously
+72. Create an `mcu.cfg` file using the command: `printf "[mcu]\ncanbus_uuid: fc86d6d0415a\n" > ~/printer_data/config/mcu.cfg` with the correct UUID for the KGP 4x2209 that was found previously
 
-72. `sudo service klipper start`
+73. `sudo service klipper start`
 
-73. Copy the `printer.cfg` file from this GitHub repository in the `configs` folder into the `http://kgpft1` Mainsail "MACHINE" web page.
+74. Copy the `printer.cfg` file from this GitHub repository in the `configs` folder into the `http://kgpft1` Mainsail "MACHINE" web page.
 
-74. Comment out the `[include toolhead.cfg]` and `[temperature_sensor toolhead_temp]` statements in the `printer.cfg` in `http://kgpft1` for testing.
+75. Comment out the `[include toolhead.cfg]` and `[temperature_sensor toolhead_temp]` statements in the `printer.cfg` in `http://kgpft1` for testing.
 
-75. Click on "SAVE AND RESTART` and Klipper should come up with the screen:
+76. Click on "SAVE AND RESTART` and Klipper should come up with the screen:
 
 ![Klipper No CAN](images/Klipper_No_CAN.png)
 
 ### Flash Toolhead Controller
 
-76. On EBB42, Put in `120R` and `VBUS` Jumpers
+77. On EBB42, Put in `120R` and `VBUS` Jumpers
 
-77. Connect EBB42 to KGP 4x209 using USB C to USB A Cable
+78. Connect EBB42 to KGP 4x209 using USB C to USB A Cable
 
-78. Press the `BOOT` Button followed by cycling `RST` to put the EBB42 into DFU Mode as shown in the following image:
+79. Press the `BOOT` Button followed by cycling `RST` to put the EBB42 into DFU Mode as shown in the following image:
 
 ![EBB42 Topside](images/EBB42_topside.png)
 
-79. Check that the Toolhead Controller is in DFU Mode by using the command `lsusb` which should produce the result:
+80. Check that the Toolhead Controller is in DFU Mode by using the command `lsusb` which should produce the result:
 
 ![Toolhead Controller DFU Mode](images/Toolhead_Controller_DFU_Mode.png)
 
-80. Move to the Katapult Folder using the command `cd ~/katapult`
+81. Move to the Katapult Folder using the command `cd ~/katapult`
 
-81. Configure Katapult for the Toolhead Controller using `make menuconfig` with the Paramters:
+82. Configure Katapult for the Toolhead Controller using `make menuconfig` with the Paramters:
 
 ![Toolhead Controller Katapult Parameters](images/Toolhead_Katapult_Menuconfig.png)
 
-82. Save menuconfig paramters by entering `Q` and then `Y`
+83. Save menuconfig paramters by entering `Q` and then `Y`
    
-83. `make clean`
+84. `make clean`
 
-84. `make`
+85. `make`
 
-85. Flash the Toolhead Controller with Katapult using the command: `sudo dfu-util -a 0 -D ~/katapult/out/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11`
+86. Flash the Toolhead Controller with Katapult using the command: `sudo dfu-util -a 0 -D ~/katapult/out/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11`
 
-86. Power Down the KGP 4x2209 after `sudo shutdown now` has executed
+87. Power Down the KGP 4x2209 after `sudo shutdown now` has executed
 
-87. With Power off, unplug the Toolhead Controller from the KGP 4x2209 USB port and reattach it using the CAN connection
+88. With Power off, unplug the Toolhead Controller from the KGP 4x2209 USB port and reattach it using the CAN connection
 
-88. Power Up, wait for the Raspberry Pi CM4 to come up and login using SSH
+89. Power Up, wait for the Raspberry Pi CM4 to come up and login using SSH
 
-89. Check that the Toolhead Controller is active and properly wired using the command `~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0` which should return:
+90. Check that the Toolhead Controller is active and properly wired using the command `~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0` which should return:
 
 ![Toolhead Control CAN Connection](images/Toolhead_Controller_Initial_CAN_Connection.png)
 
-90. `cd ~/klipper`
+91. `cd ~/klipper`
 
-91. Configure Klipper for the Toolhead Controller using `make menuconfig` with the Parameters:
+92. Configure Klipper for the Toolhead Controller using `make menuconfig` with the Parameters:
 
 ![Toolhead Controller Klipper Paramters](images/Toolhead_Klipper_Menuconfig.png)
 
-92. Save menuconfig paramters by entering `Q` and then `Y`
+93. Save menuconfig paramters by entering `Q` and then `Y`
    
-93. `make clean`
+94. `make clean`
 
-94. `make`
+95. `make`
 
-95. `sudo service klipper stop`
+96. `sudo service klipper stop`
 
-96. `python3 ~/katapult/scripts/flashtool.py -i can0 -q` which should return something like:
+97. `python3 ~/katapult/scripts/flashtool.py -i can0 -q` which should return something like:
 
 ![Toolhead Controller Katapult UUID](images/Toolhead_Controller_Klipper_Paramters.png)
 
-97. Flash the Toolhead Controller using `python3 ~/katapult/scripts/flashtool.py -i can0 -f ~/klipper/out/klipper.bin -u 821165b91308` using the UUID found in the previous step
+98. Flash the Toolhead Controller using `python3 ~/katapult/scripts/flashtool.py -i can0 -f ~/klipper/out/klipper.bin -u 821165b91308` using the UUID found in the previous step
 
-98. Check for the CAN UUID using `python3 ~/katapult/scripts/flashtool.py -i can0 -q` which will return the Klipper CAN UUID:
+99. Check for the CAN UUID using `python3 ~/katapult/scripts/flashtool.py -i can0 -q` which will return the Klipper CAN UUID:
 
 ![Toolhead Controller CAN UUID](images/Toolhead_Controller_CAN_UUID.png)
 
-99. Using the CAN UUID found in the previous step, create the `toolhead.cfg` file using the command `printf "[mcu toolhead]\ncanbus_uuid: 821165b91308\n" > ~/printer_data/config/toolhead.cfg`
+100. Using the CAN UUID found in the previous step, create the `toolhead.cfg` file using the command `printf "[mcu toolhead]\ncanbus_uuid: 821165b91308\n" > ~/printer_data/config/toolhead.cfg`
 
-100. Edit `printer.cfg` on the Mainsail webpage and Remove comments on the `[include toolhead.cfg]` and `[temperature_sensor toolhead_temp]` statements
+101. Edit `printer.cfg` on the Mainsail webpage and Remove comments on the `[include toolhead.cfg]` and `[temperature_sensor toolhead_temp]` statements
 
-101. `sudo service klipper start` and Klipper should start up as:
+102. `sudo service klipper start` and Klipper should start up as:
 
 ![Test SD Card All Setup](images/Test_SD_Card_All_Setup.png)
