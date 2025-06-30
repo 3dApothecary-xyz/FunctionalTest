@@ -1,0 +1,5 @@
+blt = printer.lookup_object('bltouch')
+toolhead = printer.lookup_object('toolhead')
+print_time = toolhead.get_last_move_time()
+status = blt.query_endstop(print_time)
+output(status)
