@@ -497,7 +497,7 @@ install_script: install.sh
 
 84. Configure Katapult for the Toolhead Controller using `make menuconfig` with the Paramters:
 
-![Toolhead Controller Katapult Parameters](images/Toolhead_Katapult_Menuconfig.png)
+![Toolhead Controller Katapult Parameters](images/Correct_EBB42_menuconfig.png)
 
 85. Save menuconfig paramters by entering `Q` and then `Y`
    
