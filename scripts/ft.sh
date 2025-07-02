@@ -16,6 +16,7 @@ ftVersion() {
              # Added "trap '' SIGINT" to Prevent User from Ctrl-C
   ver="0.06" # Reorganizing Tests to better match the workflow
              # Instituting Dynamic Macros to the tests
+  ver="0.07" # Added DSENSOR# Tests
 
   echo "$ver"
 }
@@ -1064,6 +1065,232 @@ else
   heatersOff
   exit
 fi
+
+########################################################################
+testNUM="14"  # Check DSENSOR0 Operation
+########################################################################
+
+echo -e  "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: Check DSENSOR0 Operation"
+logFileImage="$logFileImage\nTEST$testNUM: Check DSENSOR0 Operation"
+
+echo -ne "SET_PIN PIN=dsensor0pin VALUE=1\n" > "$TTY" || true
+
+sleep 1
+
+echo -ne "GETDSENSORVALUE\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+echoE "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "dsensorvalue=1"; then
+  echoE " "
+  Yn=$(checkLED "$testNUM" "4")
+
+  if [[ "Y" == "$Yn" ]]; then
+    echoE "  "
+    echoE   "TEST$testNUM: DSENSOR0 LED Active"
+    echoE "  "
+  else
+    heatersOff
+    echo -ne "SET_PIN PIN=dsensor0pin VALUE=0\n" > "$TTY" || true
+    echoE "  "
+    drawError "TEST$testNUM: DSENSOR0 LED Active Check" "LED Not Lit"
+    logFileImage="$logFileImage\nTEST$testNUM: DSENSOR0 LED Active Check: LED Not Lit"
+    exit
+  fi
+else
+  heatersOff
+  echo -ne "SET_PIN PIN=dsensor0pin VALUE=0\n" > "$TTY" || true
+  drawError "TEST$testNUM: DSENSOR0 Not Active"
+  logFileImage="$logFileImage\nTEST$testNUM: DSENSOR0 Not Active"
+  heatersOff
+  exit
+fi
+
+echo -ne "SET_PIN PIN=dsensor0pin VALUE=0\n" > "$TTY" || true
+
+########################################################################
+testNUM="15"  # Check DSENSOR1 Operation
+########################################################################
+
+echo -e  "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: Check DSENSOR1 Operation"
+logFileImage="$logFileImage\nTEST$testNUM: Check DSENSOR1 Operation"
+
+echo -ne "SET_PIN PIN=dsensor1pin VALUE=1\n" > "$TTY" || true
+
+sleep 1
+
+echo -ne "GETDSENSORVALUE\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+echoE "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "dsensorvalue=2"; then
+  echoE " "
+  Yn=$(checkLED "$testNUM" "5")
+
+  if [[ "Y" == "$Yn" ]]; then
+    echoE "  "
+    echoE   "TEST$testNUM: DSENSOR1 LED Active"
+    echoE "  "
+  else
+    heatersOff
+    echo -ne "SET_PIN PIN=dsensor1pin VALUE=0\n" > "$TTY" || true
+    echoE "  "
+    drawError "TEST$testNUM: DSENSOR1 LED Active Check" "LED Not Lit"
+    logFileImage="$logFileImage\nTEST$testNUM: DSENSOR1 LED Active Check: LED Not Lit"
+    exit
+  fi
+else
+  heatersOff
+  echo -ne "SET_PIN PIN=dsensor1pin VALUE=0\n" > "$TTY" || true
+  drawError "TEST$testNUM: DSENSOR1 Not Active"
+  logFileImage="$logFileImage\nTEST$testNUM: DSENSOR1 Not Active"
+  heatersOff
+  exit
+fi
+
+echo -ne "SET_PIN PIN=dsensor1pin VALUE=0\n" > "$TTY" || true
+
+########################################################################
+testNUM="16"  # Check DSENSOR2 Operation
+########################################################################
+
+echo -e  "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: Check DSENSOR2 Operation"
+logFileImage="$logFileImage\nTEST$testNUM: Check DSENSOR2 Operation"
+
+echo -ne "SET_PIN PIN=dsensor2pin VALUE=1\n" > "$TTY" || true
+
+sleep 1
+
+echo -ne "GETDSENSORVALUE\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+echoE "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "dsensorvalue=4"; then
+  echoE " "
+  Yn=$(checkLED "$testNUM" "6")
+
+  if [[ "Y" == "$Yn" ]]; then
+    echoE "  "
+    echoE   "TEST$testNUM: DSENSOR2 LED Active"
+    echoE "  "
+  else
+    heatersOff
+    echo -ne "SET_PIN PIN=dsensor2pin VALUE=0\n" > "$TTY" || true
+    echoE "  "
+    drawError "TEST$testNUM: DSENSOR2 LED Active Check" "LED Not Lit"
+    logFileImage="$logFileImage\nTEST$testNUM: DSENSOR2 LED Active Check: LED Not Lit"
+    exit
+  fi
+else
+  heatersOff
+  echo -ne "SET_PIN PIN=dsensor2pin VALUE=0\n" > "$TTY" || true
+  drawError "TEST$testNUM: DSENSOR2 Not Active"
+  logFileImage="$logFileImage\nTEST$testNUM: DSENSOR2 Not Active"
+  heatersOff
+  exit
+fi
+
+echo -ne "SET_PIN PIN=dsensor2pin VALUE=0\n" > "$TTY" || true
+
+########################################################################
+testNUM="17"  # Check DSENSOR3 Operation
+########################################################################
+
+echo -e  "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: Check DSENSOR3 Operation"
+logFileImage="$logFileImage\nTEST$testNUM: Check DSENSOR3 Operation"
+
+echo -ne "SET_PIN PIN=dsensor3pin VALUE=1\n" > "$TTY" || true
+
+sleep 1
+
+echo -ne "GETDSENSORVALUE\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+echoE "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "dsensorvalue=8"; then
+  echoE " "
+  Yn=$(checkLED "$testNUM" "7")
+
+  if [[ "Y" == "$Yn" ]]; then
+    echoE "  "
+    echoE   "TEST$testNUM: DSENSOR3 LED Active"
+    echoE "  "
+  else
+    heatersOff
+    echo -ne "SET_PIN PIN=dsensor3pin VALUE=0\n" > "$TTY" || true
+    echoE "  "
+    drawError "TEST$testNUM: DSENSOR3 LED Active Check" "LED Not Lit"
+    logFileImage="$logFileImage\nTEST$testNUM: DSENSOR3 LED Active Check: LED Not Lit"
+    exit
+  fi
+else
+  heatersOff
+  echo -ne "SET_PIN PIN=dsensor3pin VALUE=0\n" > "$TTY" || true
+  drawError "TEST$testNUM: DSENSOR3 Not Active"
+  logFileImage="$logFileImage\nTEST$testNUM: DSENSOR3 Not Active"
+  heatersOff
+  exit
+fi
+
+echo -ne "SET_PIN PIN=dsensor3pin VALUE=0\n" > "$TTY" || true
+
+########################################################################
+testNUM="17"  # Check DSENSOR4 Operation
+########################################################################
+
+echo -e  "$outline$PHULLSTRING"
+doAppend "!TEST$testNUM: Check DSENSOR4 Operation"
+logFileImage="$logFileImage\nTEST$testNUM: Check DSENSOR4 Operation"
+
+echo -ne "SET_PIN PIN=dsensor4pin VALUE=1\n" > "$TTY" || true
+
+sleep 1
+
+echo -ne "GETDSENSORVALUE\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+echoE "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "dsensorvalue=16"; then
+  echoE " "
+  Yn=$(checkLED "$testNUM" "8")
+
+  if [[ "Y" == "$Yn" ]]; then
+    echoE "  "
+    echoE   "TEST$testNUM: DSENSOR4 LED Active"
+    echoE "  "
+  else
+    heatersOff
+    echo -ne "SET_PIN PIN=dsensor4pin VALUE=0\n" > "$TTY" || true
+    echoE "  "
+    drawError "TEST$testNUM: DSENSOR4 LED Active Check" "LED Not Lit"
+    logFileImage="$logFileImage\nTEST$testNUM: DSENSOR4 LED Active Check: LED Not Lit"
+    exit
+  fi
+else
+  heatersOff
+  echo -ne "SET_PIN PIN=dsensor4pin VALUE=0\n" > "$TTY" || true
+  drawError "TEST$testNUM: DSENSOR4 Not Active"
+  logFileImage="$logFileImage\nTEST$testNUM: DSENSOR4 Not Active"
+  heatersOff
+  exit
+fi
+
+echo -ne "SET_PIN PIN=dsensor4pin VALUE=0\n" > "$TTY" || true
+
 
 
 
