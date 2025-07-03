@@ -224,9 +224,11 @@
 
 20. `sudo apt-get install git -y`
 
+21. Load Pyserial for Katapult operation using `sudo apt install python3 python3-serial -y`
+
 ### Download Raspberry Pi & NewHat2 GPIO Utilities from GitHub
 
-21. Dowload python utilities:
+22. Dowload python utilities:
     * `mkdir python`
     * `cd python`
     * `wget -O cycle38.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycle38.py?raw=true`
@@ -237,12 +239,12 @@
     * `chmod 777 *.py`
     * `cd ~`
       
-22. Test python operation with: `python python/cycle38.py`
+23. Test python operation with: `python python/cycle38.py`
     * Check Pin 38 on KGP 4x2209's Raspberry Pi 40Pin Connector with a DMM: Pin should be cycling between 0V and 3.3V every 2 Seconds
 
 ### Download Functional Test Script 
 
-23. Dowload Functional Test Script:
+24. Dowload Functional Test Script:
     * `mkdir scripts`
     * `cd scripts`
     * `wget -O ft.sh https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/scripts/ft.sh?raw=true`
@@ -251,47 +253,47 @@
 
 ### Create `logs` directory
       
-24. `mkdir logs`
+25. `mkdir logs`
 
 ### Enable CANBus Operation
 
 * Following instructions found at: [Estoterical CANBus Guide](https://canbus.esoterical.online/Getting_Started.html)
 
-25. `sudo systemctl enable systemd-networkd`
+26. `sudo systemctl enable systemd-networkd`
 
-26. `sudo systemctl start systemd-networkd`
+27. `sudo systemctl start systemd-networkd`
 
-27. Check to see that networkd is operating using the command `systemctl | grep systemd-networkd`
+28. Check to see that networkd is operating using the command `systemctl | grep systemd-networkd`
 
 ![SSH of the Previous Three Commands](images/networkd_Running.png)
 
-28. `sudo systemctl disable systemd-networkd-wait-online.service`
+29. `sudo systemctl disable systemd-networkd-wait-online.service`
 
-29. `echo -e 'SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"' | sudo tee /etc/udev/rules.d/10-can.rules > /dev/null`
+30. `echo -e 'SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"' | sudo tee /etc/udev/rules.d/10-can.rules > /dev/null`
 
-30. Check to see that the CAN rules were applied correctly using: `cat /etc/udev/rules.d/10-can.rules`
+31. Check to see that the CAN rules were applied correctly using: `cat /etc/udev/rules.d/10-can.rules`
 
 ![CAN Rules Check Response](images/CAN_rules_check.png)
 
-31. `echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\nRestartSec=0.1s\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null`
+32. `echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\nRestartSec=0.1s\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null`
 
-32. Check to see that the CAN Network Parameters were set correctly using: `cat /etc/systemd/network/25-can.network`
+33. Check to see that the CAN Network Parameters were set correctly using: `cat /etc/systemd/network/25-can.network`
 
 ![CAN Network Check Response](images/CAN_network_check.png)
 
-33. `sudo reboot now`
+34. `sudo reboot now`
 
-34. Wait 2 minutes then `ssh biqu@kgpft1` and enter password `biqu` when prompted
+35. Wait 2 minutes then `ssh biqu@kgpft1` and enter password `biqu` when prompted
 
-35. Run `python python/cycle38.py` to make sure everkything is okay
+36. Run `python python/cycle38.py` to make sure everkything is okay
 
 ### Load Klipper using KIAUH
 
 * Following instructions found at: [GitHub KIAUH Repository](https://github.com/dw-0/kiauh)
 
-36. `git clone https://github.com/dw-0/kiauh.git`
+37. `git clone https://github.com/dw-0/kiauh.git`
 
-37. `./kiauh/kiauh.sh`
+38. `./kiauh/kiauh.sh`
     * If asked to try out KIAUH 6 enter `3` which is `3) Yes, remember my choice for next time`
     * Select `2) [Update]`
     * if Option `9) System` does NOT say `No upgrades available.` then:
@@ -302,19 +304,17 @@
     *       `./kiauh/kiauh.sh` to restart KIAUH
     *       Select `2)[Update]` to return to KIAUH Update Screen
    
-38. Select `B) << Back` to exit Update Panel
+39. Select `B) << Back` to exit Update Panel
     * Select `1) [Install]` to go to Klipper Installation Panel
     * Select `1) [Klipper]` to Install Klipper on the Raspberry Pi CM4.  Select default options when prompted
     * Select `2) [Moonraker]` to Install Moonraker on the Raspberry Pi CM4.  Select default options when prompted
     * Select `3) [Mainsail]` to Install Mainsail on the Raspberry Pi CM4.  Select default options when prompted
-    * Select `B << Back` to return to the main menu
+    * Select `B) << Back` to return to the main menu
     * Select `Q) Quit` to exit KIAUH
 
-39. Check Klipper installation by loading the Mainsail webpage: `http://kgpft1`
+40. Check Klipper installation by loading the Mainsail webpage: `http://kgpft1`
 
 ![kgpft1 Mainsail Webpage](images/Mainsail_Webpage.png)
-
-40. Load Pyserial for Katapult operation using `sudo apt install python3 python3-serial -y`
 
 ### Load Numpy for ADXL345 Testing
 
