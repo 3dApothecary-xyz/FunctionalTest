@@ -222,45 +222,43 @@
 
 19. Enter `sudo apt upgrade -y`
 
+20. `sudo apt-get install git -y`
+
 ### Enable CANBus Operation
 
 * Following instructions found at: [Estoterical CANBus Guide](https://canbus.esoterical.online/Getting_Started.html)
 
-20. `sudo systemctl enable systemd-networkd`
+21. `sudo systemctl enable systemd-networkd`
 
-21. `sudo systemctl start systemd-networkd`
+22. `sudo systemctl start systemd-networkd`
 
-22. Check to see that networkd is operating using the command `systemctl | grep systemd-networkd`
+23. Check to see that networkd is operating using the command `systemctl | grep systemd-networkd`
 
 ![SSH of the Previous Three Commands](images/networkd_Running.png)
 
-23. `sudo systemctl disable systemd-networkd-wait-online.service`
+24. `sudo systemctl disable systemd-networkd-wait-online.service`
 
-24. `echo -e 'SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"' | sudo tee /etc/udev/rules.d/10-can.rules > /dev/null`
+25. `echo -e 'SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"' | sudo tee /etc/udev/rules.d/10-can.rules > /dev/null`
 
-25. Check to see that the CAN rules were applied correctly using: `cat /etc/udev/rules.d/10-can.rules`
+26. Check to see that the CAN rules were applied correctly using: `cat /etc/udev/rules.d/10-can.rules`
 
 ![CAN Rules Check Response](images/CAN_rules_check.png)
 
-26. `echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\nRestartSec=0.1s\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null`
+27. `echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\nRestartSec=0.1s\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null`
 
-27. Check to see that the CAN Network Parameters were set correctly using: `cat /etc/systemd/network/25-can.network`
+28. Check to see that the CAN Network Parameters were set correctly using: `cat /etc/systemd/network/25-can.network`
 
 ![CAN Network Check Response](images/CAN_network_check.png)
 
-28. `sudo reboot now`
+29. `sudo reboot now`
 
-29. Wait 2 minutes for Raspberry Pi CM4 to reboot
+30. Wait 2 minutes for Raspberry Pi CM4 to reboot
 
-30. `ssh biqu@kgpft1` and enter password `biqu` when prompted
+31. `ssh biqu@kgpft1` and enter password `biqu` when prompted
 
-### Download Raspberry Pi GPIO Files from GitHub
+### Download Raspberry Pi GPIO Files & NewHat2 GPIO Utilities from GitHub
 
 * Following instructions found at: [Pi My Life Up/raspberry-pi-gpio](https://pimylifeup.com/raspberry-pi-gpio/)
-
-31. `sudo apt-get update && sudo apt-get install git -y`
-
-### Download Python Raspberry Pi CM4/NewHat2 GPIO Utilities
 
 32. Dowload python utilities:
     * `mkdir python`
