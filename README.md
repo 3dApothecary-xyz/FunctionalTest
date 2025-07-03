@@ -254,15 +254,13 @@
 
 30. `ssh biqu@kgpft1` and enter password `biqu` when prompted
 
-### Download Necessary Files from GitHub
+### Download Raspberry Pi GPIO Files from GitHub
 
 * Following instructions found at: [Pi My Life Up/raspberry-pi-gpio](https://pimylifeup.com/raspberry-pi-gpio/)
 
 31. `sudo apt-get update && sudo apt-get install git -y`
 
 ### Download Python Raspberry Pi CM4/NewHat2 GPIO Utilities
-
-* Following instructions found at: [Pi My Life Up/raspberry-pi-gpio](https://pimylifeup.com/raspberry-pi-gpio/)
 
 32. Dowload python utilities:
     * `mkdir python`
