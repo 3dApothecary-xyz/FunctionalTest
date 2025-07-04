@@ -476,7 +476,7 @@ install_script: install.sh
 
 80. Check to see that there is a `.dynamicmacros.cfg` file in `~/printer_data/config` using the command `ls ~/printer_data/config -al`
 
-~[Dynamic Macros Installed Screenshot](impages/dynamicmacros_Installed.png)
+![Dynamic Macros Installed Screenshot](images/dynamicmacros_Installed.png)
 
 ### Flash Toolhead Controller
 
