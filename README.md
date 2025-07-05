@@ -360,7 +360,7 @@
 
 54. `cd ~`
    
-55. git clone https://github.com/Arksine/katapult`
+55. `git clone https://github.com/Arksine/katapult`
 
 ### Make Firmware Images
 
