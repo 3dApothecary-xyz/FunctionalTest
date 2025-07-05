@@ -469,7 +469,6 @@ install_script: install.sh
     * `cd ~`
     * `git clone https://github.com/3DCoded/DynamicMacros`
     * `cd DynamicMacros`
-    * `cd ~/DynamicMacros`
     * `sh install.sh`
     * `sudo service klipper restart`
     * `cd ~`
@@ -479,6 +478,10 @@ install_script: install.sh
 81. Check to see that there is a `.dynamicmacros.cfg` file in `~/printer_data/config` using the command `ls ~/printer_data/config -al`
 
 ![Dynamic Macros Installed Screenshot](images/dynamicmacros_Installed.png)
+
+82. Check to see that there is a `[include .dynamicmacros.cfg]` statement at the start of `printer.cfg`
+
+![Dynamic Macros Installed in Printer.cfg](images/Dynamic_Macros_in_printer-cfg.png)
 
 ### Flash Toolhead Controller
 
