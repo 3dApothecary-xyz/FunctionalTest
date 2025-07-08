@@ -1154,123 +1154,39 @@ for dSensorpin in "${dSensorPins[@]}"; do
   echo -ne "SET_PIN PIN=$dSensorpin VALUE=0\n" > "$TTY" || true
 done
 
-exit
-
 ########################################################################
-testNUM="18"  # Check FAN0 Operation
+# Loop Through Check FAN# Operation
 ########################################################################
+fanPins=("fan0" "fan1" "fan2" "fan3") 
+for fanpin in "${fanPins[@]}"; do
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
 
-echo -e  "$outline$PHULLSTRING"
-doAppend "!TEST$testNUM: Check FAN0 Operation"
-logFileImage="$logFileImage\nTEST$testNUM: Check FAN0 Operation"
+  echo -e  "$outline$PHULLSTRING"
+  doAppend "!TEST$testNUM: Check $fanpin Operation"
+  logFileImage="$logFileImage\nTEST$testNUM: Check $fanpin Operation"
 
-echo -ne "SET_FAN_SPEED FAN=fan0 SPEED=0.1\n" > "$TTY" || true
+  echo -ne "SET_FAN_SPEED FAN=$fanpin SPEED=0.1\n" > "$TTY" || true
 
-sleep 1
+  sleep 1
 
-echoE " "
-Yn=$(checkLED "$testNUM" "FAN0")
+  echoE " "
+  Yn=$(checkLED "$testNUM" "$fanpin")
 
-echo -ne "SET_FAN_SPEED FAN=fan0 SPEED=0\n" > "$TTY" || true
+  echo -ne "SET_FAN_SPEED FAN=$fanpin SPEED=0\n" > "$TTY" || true
 
-if [[ "Y" == "$Yn" ]]; then
-  echoE "  "
-  echoE   "TEST$testNUM: FAN0 Driver Active"
-  echoE "  "
-else
-  heatersOff
-  echoE "  "
-  drawError "TEST$testNUM: FAN0 Operation Check" "LED/Strip LED Not Lit"
-  logFileImage="$logFileImage\nTEST$testNUM: FAN0 LED Operation Check: LED/Strip LED Not Lit"
-  exit
+  if [[ "Y" == "$Yn" ]]; then
+    echoE "  "
+    echoE   "TEST$testNUM: $fanpin Driver Active"
+    echoE "  "
+  else
+    heatersOff
+    echoE "  "
+    drawError "TEST$testNUM: $fanpin Operation Check" "LED/Strip LED Not Lit"
+    logFileImage="$logFileImage\nTEST$testNUM: $fanpin LED Operation Check: LED/Strip LED Not Lit"
+    exit
   fi
-
-########################################################################
-testNUM="19"  # Check FAN1 Operation
-########################################################################
-
-echo -e  "$outline$PHULLSTRING"
-doAppend "!TEST$testNUM: Check FAN1 Operation"
-logFileImage="$logFileImage\nTEST$testNUM: Check FAN1 Operation"
-
-echo -ne "SET_FAN_SPEED FAN=fan1 SPEED=0.1\n" > "$TTY" || true
-
-sleep 1
-
-echoE " "
-Yn=$(checkLED "$testNUM" "FAN1")
-
-echo -ne "SET_FAN_SPEED FAN=fan1 SPEED=0\n" > "$TTY" || true
-
-if [[ "Y" == "$Yn" ]]; then
-  echoE "  "
-  echoE   "TEST$testNUM: FAN1 Driver Active"
-  echoE "  "
-else
-  heatersOff
-  echoE "  "
-  drawError "TEST$testNUM: FAN1 Operation Check" "LED/Strip LED Not Lit"
-  logFileImage="$logFileImage\nTEST$testNUM: FAN1 LED Operation Check: LED/Strip LED Not Lit"
-  exit
-  fi
-
-########################################################################
-testNUM="20"  # Check FAN2 Operation
-########################################################################
-
-echo -e  "$outline$PHULLSTRING"
-doAppend "!TEST$testNUM: Check FAN2 Operation"
-logFileImage="$logFileImage\nTEST$testNUM: Check FAN2 Operation"
-
-echo -ne "SET_FAN_SPEED FAN=fan2 SPEED=0.1\n" > "$TTY" || true
-
-sleep 1
-
-echoE " "
-Yn=$(checkLED "$testNUM" "FAN2")
-
-echo -ne "SET_FAN_SPEED FAN=fan2 SPEED=0\n" > "$TTY" || true
-
-if [[ "Y" == "$Yn" ]]; then
-  echoE "  "
-  echoE   "TEST$testNUM: FAN2 Driver Active"
-  echoE "  "
-else
-  heatersOff
-  echoE "  "
-  drawError "TEST$testNUM: FAN2 Operation Check" "LED/Strip LED Not Lit"
-  logFileImage="$logFileImage\nTEST$testNUM: FAN2 LED Operation Check: LED/Strip LED Not Lit"
-  exit
-  fi
-
-########################################################################
-testNUM="21"  # Check FAN3 Operation
-########################################################################
-
-echo -e  "$outline$PHULLSTRING"
-doAppend "!TEST$testNUM: Check FAN3 Operation"
-logFileImage="$logFileImage\nTEST$testNUM: Check FAN3 Operation"
-
-echo -ne "SET_FAN_SPEED FAN=fan3 SPEED=0.1\n" > "$TTY" || true
-
-sleep 1
-
-echoE " "
-Yn=$(checkLED "$testNUM" "FAN3")
-
-echo -ne "SET_FAN_SPEED FAN=fan3 SPEED=0\n" > "$TTY" || true
-
-if [[ "Y" == "$Yn" ]]; then
-  echoE "  "
-  echoE   "TEST$testNUM: FAN3 Driver Active"
-  echoE "  "
-else
-  heatersOff
-  echoE "  "
-  drawError "TEST$testNUM: FAN3 Operation Check" "LED/Strip LED Not Lit"
-  logFileImage="$logFileImage\nTEST$testNUM: FAN3 LED Operation Check: LED/Strip LED Not Lit"
-  exit
-  fi
+done  
 
 
 
