@@ -214,7 +214,7 @@
     * Enter `yes` if the question appears: "The authenticity of host 'kgpft1 ... Are you sure you want to continue connecting (yes/no/[fingerprint])?"
     * Enter the password `biqu`
 
-17. Enter `ifconfg` and make sure that the network response looks like:
+17. Enter `sudoo ifconfg` and make sure that the network response looks like:
 
 ![ifconfig Results](images/ifconfigResults.png)
 
