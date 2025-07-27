@@ -431,9 +431,7 @@
 
 73. Copy the `printer.cfg` file from this GitHub repository in the `configs` folder into the `http://kgpft1` Mainsail "MACHINE" web page.
 
-74. Comment out the `[include toolhead.cfg]`, `[temperature_sensor toolhead_temp]` and `[dynamicmacros]` statements in the `printer.cfg` in `http://kgpft1` for testing.
-
-75. Click on "SAVE AND RESTART` and Klipper should come up with the screen:
+74. Click on "SAVE AND RESTART` and Klipper should come up with the screen:
 
 ![Klipper No CAN](images/Klipper_No_CAN.png)
 
@@ -441,7 +439,7 @@
 
 * Following instructions found at: [Dynamic Macros Setup](https://dynamicmacros.3dcoded.xyz/setup/)
 
-76. Install the Python Code and configuration file
+75. Install the Python Code and configuration file
     * `cd ~/printer_data/config`
     * `wget -O dynamic.cfg https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/configs/dynamic.cfg?raw=true`
     * `wget -O read_adxl.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/configs/read_adxl.py?raw=true`
@@ -451,9 +449,9 @@
     * `chmod 777 *.py`
     * `cd ~`
    
-77. Restore the `[dynamicmacros]` statement in the `printer.cfg`
+76. Restore the `[dynamicmacros]` statement in the `printer.cfg`
    
-78. From Mainsail, edit `moonraker.conf` and add the lines at the end of the file:
+77. From Mainsail, edit `moonraker.conf` and add the lines at the end of the file:
 ```
 # DynamicMacros Update Manager
 [update_manager DynamicMacros]
@@ -465,7 +463,7 @@ is_system_service: False
 install_script: install.sh
 ```
 
-79. Install Dyanmic Macros:
+78. Install Dyanmic Macros:
     * `cd ~`
     * `git clone https://github.com/3DCoded/DynamicMacros`
     * `cd DynamicMacros`
@@ -473,13 +471,13 @@ install_script: install.sh
     * `sudo service klipper restart`
     * `cd ~`
    
-80. Check to see that Klipper has restated properly in Mainsail
+79. Check to see that Klipper has restated properly in Mainsail
 
-81. Check to see that there is a `.dynamicmacros.cfg` file in `~/printer_data/config` using the command `ls ~/printer_data/config -al`
+80. Check to see that there is a `.dynamicmacros.cfg` file in `~/printer_data/config` using the command `ls ~/printer_data/config -al`
 
 ![Dynamic Macros Installed Screenshot](images/dynamicmacros_Installed.png)
 
-82. Check to see that there is a `[include .dynamicmacros.cfg]` statement at the start of `printer.cfg`
+81. Check to see that there is a `[include .dynamicmacros.cfg]` statement at the start of `printer.cfg`
 
 ![Dynamic Macros Installed in Printer.cfg](images/Dynamic_Macros_in_printer-cfg.png)
 
