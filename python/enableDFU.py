@@ -5,8 +5,10 @@ import RPi.GPIO as GPIO
 import time
 
 # Pin Definitions
-BOOT0 = 3
-RESET = 5
+#BOOT0 = 3  # For NewHat2
+BOOT0 = 7  # For NewHat3
+#RESET = 5  # For NewHat2
+RESET = 11  # For NewHat3
 
 # Enable IO Pins
 GPIO.setmode(GPIO.BOARD)
