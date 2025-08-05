@@ -284,4 +284,4 @@ sudo apt upgrade -y
 
 apt-get install git -y
 
-sudo apt install python3 python3-serial -y
+#sudo apt install python3 python3-serial -y
