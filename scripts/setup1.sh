@@ -5,7 +5,7 @@
 # Code here is documented at: https://github.com/3dApothecary-xyz/FunctionalTest/tree/main?tab=readme-ov-file#functional-test-process
 
 # To execute from the Raspberry Pi CM4 from Startup run:
-# curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/setup1.sh | bash
+# curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/setup.sh | bash
 
 ftVersion() {
   ver="0.01" # Initial Version copied from ft.sh and setup process documented on GitHub
@@ -290,11 +290,16 @@ sudo apt upgrade -y
 
 apt-get install git -y
 
+########################################################################
+echo -e " "
+drawHeader "Install Python3 Serial"
+########################################################################
+
 sudo apt install python3 python3-serial -y
 
 ########################################################################
+echo -e " "
 drawHeader "Download Raspberry Pi & NewHat Utilities"
-echo -e "$outline$PHULLSTRING$BASE"
 ########################################################################
 
 mkdir python
@@ -323,8 +328,8 @@ wget -O KGP_4x2209_DFU.bin https://github.com/3dApothecary-xyz/FunctionalTest/bl
 cd ~
 
 ########################################################################
+echo -e " "
 drawHeader "Enable CANBus Operation"
-echo -e "$outline$PHULLSTRING$BASE"
 ########################################################################
 
 sudo systemctl enable systemd-networkd
@@ -336,8 +341,8 @@ sudo systemctl disable systemd-networkd-wait-online.service
 echo -e 'SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"' | sudo tee /etc/udev/rules.d/10-can.rules > /dev/null
 
 ########################################################################
+echo -e " "
 drawHeader "Load Klipper using KIAUH"
-echo -e "$outline$PHULLSTRING$BASE"
 ########################################################################
 
 git clone https://github.com/dw-0/kiauh.git
