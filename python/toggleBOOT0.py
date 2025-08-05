@@ -3,7 +3,8 @@
 import RPi.GPIO as GPIO
 import time
 
-BOOT0 = 3
+#BOOT0 = 3  # For NewHat2
+BOOT0 = 7  # For NewHat3
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(BOOT0, GPIO.OUT)
