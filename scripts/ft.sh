@@ -22,6 +22,8 @@ ftVersion() {
              # Changed "CheckLED" to use LED Net Name instead of Number
              # Added Increment testNUM before each test rather than set it
              # Put in Loop Code to Check DSENSORs rather than individual test blocks
+  ver="0.09" # Added ability to allow Running Checks with simple flags
+             # Updates for NewHat3
 
   echo "$ver"
 }
@@ -657,67 +659,71 @@ sleep 1
 python ~/python/enableKatapult.py
 
 
-
+doBasicLEDCheck=0
+if [[ 0 != $doBasicLEDCheck ]]; then
 ########################################################################
 # Check Power LED Lit
 ########################################################################
-testNum=$((testNum + 1))
-testNumString=$(makeTestNUMString "$testNum")
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
 
-echoE " "
-Yn=$(checkLED "$testNumString" "Power")
+  echoE " "
+  Yn=$(checkLED "$testNumString" "Power")
 
-if [[ "Y" == "$Yn" ]]; then
-  echoE "  "
-  echoE   "TEST$testNumString: Power LED Active"
-  echoE "  "
-else
-  echoE "  "
-  drawError "TEST$testNumString: Power LED Active Check" "LED Not Lit"
-  logFileImage="$logFileImage\nTEST$testNumString: Power LED Active Check: LED Not Lit"
-  exit
-fi
+  if [[ "Y" == "$Yn" ]]; then
+    echoE "  "
+    echoE   "TEST$testNumString: Power LED Active"
+    echoE "  "
+  else
+    echoE "  "
+    drawError "TEST$testNumString: Power LED Active Check" "LED Not Lit"
+    logFileImage="$logFileImage\nTEST$testNumString: Power LED Active Check: LED Not Lit"
+    exit
+  fi
 
 ########################################################################
 # Check DFU LED Lit
 ########################################################################
-testNum=$((testNum + 1))
-testNumString=$(makeTestNUMString "$testNum")
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
 
-echoE " "
-Yn=$(checkLED "$testNumString" "Katapult")
+  echoE " "
+  Yn=$(checkLED "$testNumString" "Katapult")
 
-if [[ "Y" == "$Yn" ]]; then
-  echoE "  "
-  echoE   "TEST$testNumString: DFU LED Flashing"
-  echoE "  "
-else
-  echoE "  "
-  drawError "TEST$testNumString: DFU LED Active Check" "LED Not Lit/Flashing"
-  logFileImage="$logFileImage\nTEST$testNumString: DFU LED Active Check: LED Not Lit/Flashing"
-  exit
-fi
+  if [[ "Y" == "$Yn" ]]; then
+    echoE "  "
+    echoE   "TEST$testNumString: DFU LED Flashing"
+    echoE "  "
+  else
+    echoE "  "
+    drawError "TEST$testNumString: DFU LED Active Check" "LED Not Lit/Flashing"
+    logFileImage="$logFileImage\nTEST$testNumString: DFU LED Active Check: LED Not Lit/Flashing"
+    exit
+  fi
 
 ########################################################################
 # Check STATUS LED Operation and BOOT0 Button
 ########################################################################
-testNum=$((testNum + 1))
-testNumString=$(makeTestNUMString "$testNum")
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
 
-echoE " "
-Yn=$(checkLED "$testNumString" "BOOT0")
+  echoE " "
+  Yn=$(checkLED "$testNumString" "BOOT0")
 
-if [[ "Y" == "$Yn" ]]; then
-  echoE "  "
-  echoE   "TEST$testNumString: STATUS LED & Button Operating Normally"
-  echoE "  "
+  if [[ "Y" == "$Yn" ]]; then
+    echoE "  "
+    echoE   "TEST$testNumString: STATUS LED & Button Operating Normally"
+    echoE "  "
+  else
+    echoE "  "
+    drawError "TEST$testNumString: STATUS LED Operation Check" "LED Not Lighting when BOOT0 Button Pressed"
+    logFileImage="$logFileImage\nTEST$testNumString: STATUS LED Operation Check: LED Not Lighting when BOOT0 Button Pressed"
+    exit
+  fi
+########################################################################
 else
-  echoE "  "
-  drawError "TEST$testNumString: STATUS LED Operation Check" "LED Not Lighting when BOOT0 Button Pressed"
-  logFileImage="$logFileImage\nTEST$testNumString: STATUS LED Operation Check: LED Not Lighting when BOOT0 Button Pressed"
-  exit
+  sleep 1 # Put in to give MCU time to reboot into Katapult
 fi
-
 
   
 dfuResponse=$(ls /dev/serial/by-id)
@@ -811,7 +817,7 @@ sudo service klipper start
 
 klipperFlag=0
 for ((i=1;10>=i;++i)); do
-  if [ $klipperFlag -eq 0 ]; then
+  if [[ 0 == $klipperFlag ]]; then
     sleep 2
 
     echo -ne "STATUS\n" > "$TTY" 
@@ -851,7 +857,7 @@ for ((i=1;10>=i;++i)); do
   fi
 done
 
-if [ $klipperFlag -eq 1 ]; then
+if [[ 0 != $klipperFlag ]]; then
   echoE "VKR:Complete"
   echoE "Klipper Running"
   echoE "  "
@@ -917,277 +923,301 @@ else
   exit
 fi
 
+doTemperatureCheck=0
+if [[ 0 != $doTemperatureCheck ]]; then
 ########################################################################
 # Toolhead Temperature
 ########################################################################
-testNum=$((testNum + 1))
-testNumString=$(makeTestNUMString "$testNum")
-
-echo -e  "$outline$PHULLSTRING"
-doAppend "!TEST$testNumString: Toolhead Temperature"
-logFileImage="$logFileImage\nTEST$testNumString: Toolhead Temperature"
-
-echo -ne "TESTMACRO03\n" > "$TTY" || true
-
-TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-
-echoE "$TEST_RESPONSE"
-
-if echo "$TEST_RESPONSE" | grep -q "TestMacro03: Toolhead Temperature Test: PASS"; then
-  echoE "  "
-else
-  drawError "TEST$testNumString: Toolhead Temperature Test" "Invalid Toolhead Temperature Value Read"
-  logFileImage="$logFileImage\nTEST$testNumString: Invalid Toolhead Temperature Value Read"
-  exit
-fi
-
-########################################################################
-# THERMO0 Temperature
-########################################################################
-testNum=$((testNum + 1))
-testNumString=$(makeTestNUMString "$testNum")
-
-echo -e  "$outline$PHULLSTRING"
-doAppend "!TEST$testNumString: THERMO0 Temperature"
-logFileImage="$logFileImage\nTEST$testNumString: THERMO0 Temperature"
-
-echo -ne "TESTMACRO04\n" > "$TTY" || true
-
-TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-
-echoE "$TEST_RESPONSE"
-
-if echo "$TEST_RESPONSE" | grep -q "TestMacro04: THERMO0 Test: PASS"; then
-  echoE "  "
-else
-  if echo "$TEST_RESPONSE" | grep -q "TestMacro04: Check THERMO0 Connection to Thermistor"; then
-    drawError "TEST$testNumString: THERMO0 Temperature Test" "Check Thermistor THERMO0 Connection to Board Under Test"
-    logFileImage="$logFileImage\nTEST$testNumString: Check Thermistor THERMO0 Connection to Board Under Test"
-    exit
-  else
-    drawError "TEST$testNumString: THERMO0 Temperature Test" "Invalid THERMO0 Thermistor Temperature Value Read"
-    logFileImage="$logFileImage\nTEST$testNumString: Invalid THERMO0 Thermistor Temperature Value Read"
-    exit
-  fi
-fi
-
-########################################################################
-# THERMO1 Temperature
-########################################################################
-testNum=$((testNum + 1))
-testNumString=$(makeTestNUMString "$testNum")
-
-echo -e  "$outline$PHULLSTRING"
-doAppend "!TEST$testNumString: THERMO1 Temperature"
-logFileImage="$logFileImage\nTEST$testNumString: THERMO1 Temperature"
-
-echo -ne "TESTMACRO05\n" > "$TTY" || true
-
-TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-
-echoE "$TEST_RESPONSE"
-
-if echo "$TEST_RESPONSE" | grep -q "TestMacro05: THERMO1 Test: PASS"; then
-  echoE "  "
-else
-  if echo "$TEST_RESPONSE" | grep -q "TestMacro05: Check THERMO1 Connection to Thermistor"; then
-    drawError "TEST$testNumString: THERMO1 Temperature Test" "Check Thermistor THERMO1 Connection to Board Under Test"
-    logFileImage="$logFileImage\nTEST$testNumString: Check Thermistor THERMO1 Connection to Board Under Test"
-    exit
-  else
-    drawError "TEST$testNumString: THERMO1 Temperature Test" "Invalid Thermistor Temperature Value Read"
-    logFileImage="$logFileImage\nTEST$testNumString: Invalid THERMO1 Thermistor Temperature Value Read"
-    exit
-  fi
-fi
-
-########################################################################
-# Set HEATER0 Temperature to 40C
-########################################################################
-testNum=$((testNum + 1))
-testNumString=$(makeTestNUMString "$testNum")
-
-echo -e  "$outline$PHULLSTRING"
-doAppend "!TEST$testNumString: Set HEATER0 Temperature to 40C"
-logFileImage="$logFileImage\nTEST$testNumString: Set HEATER0 Temperature to 40C"
-
-echo -ne "TESTMACRO06\n" > "$TTY" || true
-
-TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-
-echoE "$TEST_RESPONSE"
-
-if echo "$TEST_RESPONSE" | grep -q "TestMacro06: HEATER0 Set to 40"; then
-  echoE "  "
-else
-  drawError "TEST$testNumString: Set HEATER0 Temperature to 40C" "Unable to Set HEATER0 Temperature"
-  logFileImage="$logFileImage\nTEST$testNumString: Unable to Set HEATER0 Temperature"
-  heatersOff
-  exit
-fi
-
-########################################################################
-# Set HEATER1 Temperature to 40C
-########################################################################
-testNum=$((testNum + 1))
-testNumString=$(makeTestNUMString "$testNum")
-
-echo -e  "$outline$PHULLSTRING"
-doAppend "!TEST$testNumString: Set HEATER1 Temperature to 40C"
-logFileImage="$logFileImage\nTEST$testNumString: Set HEATER1 Temperature to 40C"
-
-echo -ne "TESTMACRO07\n" > "$TTY" || true
-
-TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-
-echoE "$TEST_RESPONSE"
-
-if echo "$TEST_RESPONSE" | grep -q "TestMacro07: HEATER1 Set to 40"; then
-  echoE "  "
-else
-  drawError "TEST$testNumString: Set HEATER1 Temperature to 40C" "Unable to Set HEATER1 Temperature"
-  logFileImage="$logFileImage\nTEST$testNumString: Unable to Set HEATER1 Temperature"
-  heatersOff
-  exit
-fi
-
-########################################################################
-# Check ADXL345 Presence
-########################################################################
-testNum=$((testNum + 1))
-testNumString=$(makeTestNUMString "$testNum")
-
-echo -e  "$outline$PHULLSTRING"
-doAppend "!TEST$testNumString: Check ADXL345 Presenece"
-logFileImage="$logFileImage\nTEST$testNumString: Check ADXL345 Presenece"
-
-echo -ne "DMTESTMACRO01\n" > "$TTY" || true
-
-TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-
-echoE "$TEST_RESPONSE"
-
-if echo "$TEST_RESPONSE" | grep -q "READ_ADXL: ADXL345 Present"; then
-  echoE "  "
-else
-  drawError "TEST$testNumString: No BLTouch Detected"
-  logFileImage="$logFileImage\nTEST$testNumString: No BLTouch Detected"
-  heatersOff
-  exit
-fi
-
-########################################################################
-# Check BLTouch Presence
-########################################################################
-testNum=$((testNum + 1))
-testNumString=$(makeTestNUMString "$testNum")
-
-echo -e  "$outline$PHULLSTRING"
-doAppend "!TEST$testNumString: Check BLTouch Presenece"
-logFileImage="$logFileImage\nTEST$testNUM: Check BLTouch Presenece"
-
-echo -ne "DMTESTMACRO02\n" > "$TTY" || true
-
-TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-
-echoE "$TEST_RESPONSE"
-
-if echo "$TEST_RESPONSE" | grep -q "BLT Object=0"; then
-  echoE "  "
-else
-  drawError "TEST$testNumString: No ADXL345 Detected"
-  logFileImage="$logFileImage\nTEST$testNumString: No ADXL345 Detected"
-  heatersOff
-  exit
-fi
-
-########################################################################
-# Loop Through Check DSENSOR# Operation
-########################################################################
-dSensorPins=("dsensor0pin" "dsensor1pin" "dsensor2pin" "dsensor3pin" "dsensor4pin") 
-expectedPin=1
-for dSensorpin in "${dSensorPins[@]}"; do
   testNum=$((testNum + 1))
   testNumString=$(makeTestNUMString "$testNum")
 
   echo -e  "$outline$PHULLSTRING"
-  doAppend "!TEST$testNumString: Check $dSensorpin Operation"
-  logFileImage="$logFileImage\nTEST$testNumString: Check $dSensorpin Operation"
+  doAppend "!TEST$testNumString: Toolhead Temperature"
+  logFileImage="$logFileImage\nTEST$testNumString: Toolhead Temperature"
 
-  echo -ne "SET_PIN PIN=$dSensorpin VALUE=1\n" > "$TTY" || true
-
-  sleep 1
-
-  echo -ne "GETDSENSORVALUE\n" > "$TTY" || true
+  echo -ne "TESTMACRO03\n" > "$TTY" || true
 
   TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
   echoE "$TEST_RESPONSE"
 
-  if echo "$TEST_RESPONSE" | grep -q "dsensorvalue=$expectedPin"; then
-    echoE " "
-    Yn=$(checkLED "$testNumString" "$dSensorpin")
-
-    echo -ne "SET_PIN PIN=$dSensorpin VALUE=0\n" > "$TTY" || true
-
-    if [[ "Y" == "$Yn" ]]; then
-      echoE "  "
-      echoE   "TEST$testNumString: $dSensorpin LED Active"
-      echoE "  "
-    else
-      heatersOff
-      echoE "  "
-      drawError "TEST$testNumString: $dSensorpin LED Active Check" "LED Not Lit"
-      logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin LED Active Check: LED Not Lit"
-      exit
-    fi
+  if echo "$TEST_RESPONSE" | grep -q "TestMacro03: Toolhead Temperature Test: PASS"; then
+    echoE "  "
   else
-    heatersOff
-    drawError "TEST$testNumString: $dSensorpin Not Active"
-    logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Not Active"
-    heatersOff
+    drawError "TEST$testNumString: Toolhead Temperature Test" "Invalid Toolhead Temperature Value Read"
+    logFileImage="$logFileImage\nTEST$testNumString: Invalid Toolhead Temperature Value Read"
     exit
   fi
 
-  expectedPin=$((expectedPin * 2))
-  
-  echo -ne "SET_PIN PIN=$dSensorpin VALUE=0\n" > "$TTY" || true
-done
-
 ########################################################################
-# Loop Through Check FAN# Operation
+# THERMO0 Temperature
 ########################################################################
-fanPins=("fan0" "fan1" "fan2" "fan3") 
-for fanpin in "${fanPins[@]}"; do
   testNum=$((testNum + 1))
   testNumString=$(makeTestNUMString "$testNum")
 
   echo -e  "$outline$PHULLSTRING"
-  doAppend "!TEST$testNUM: Check $fanpin Operation"
-  logFileImage="$logFileImage\nTEST$testNUM: Check $fanpin Operation"
+  doAppend "!TEST$testNumString: THERMO0 Temperature"
+  logFileImage="$logFileImage\nTEST$testNumString: THERMO0 Temperature"
 
-  echo -ne "SET_FAN_SPEED FAN=$fanpin SPEED=0.1\n" > "$TTY" || true
+  echo -ne "TESTMACRO04\n" > "$TTY" || true
 
-  sleep 1
+  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
-  echoE " "
-  Yn=$(checkLED "$testNUM" "$fanpin")
+  echoE "$TEST_RESPONSE"
 
-  echo -ne "SET_FAN_SPEED FAN=$fanpin SPEED=0\n" > "$TTY" || true
-
-  if [[ "Y" == "$Yn" ]]; then
-    echoE "  "
-    echoE   "TEST$testNUM: $fanpin Driver Active"
+  if echo "$TEST_RESPONSE" | grep -q "TestMacro04: THERMO0 Test: PASS"; then
     echoE "  "
   else
-    heatersOff
+    if echo "$TEST_RESPONSE" | grep -q "TestMacro04: Check THERMO0 Connection to Thermistor"; then
+      drawError "TEST$testNumString: THERMO0 Temperature Test" "Check Thermistor THERMO0 Connection to Board Under Test"
+      logFileImage="$logFileImage\nTEST$testNumString: Check Thermistor THERMO0 Connection to Board Under Test"
+      exit
+    else
+      drawError "TEST$testNumString: THERMO0 Temperature Test" "Invalid THERMO0 Thermistor Temperature Value Read"
+      logFileImage="$logFileImage\nTEST$testNumString: Invalid THERMO0 Thermistor Temperature Value Read"
+      exit
+    fi
+  fi
+
+########################################################################
+# THERMO1 Temperature
+########################################################################
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
+
+  echo -e  "$outline$PHULLSTRING"
+  doAppend "!TEST$testNumString: THERMO1 Temperature"
+  logFileImage="$logFileImage\nTEST$testNumString: THERMO1 Temperature"
+
+  echo -ne "TESTMACRO05\n" > "$TTY" || true
+
+  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+  echoE "$TEST_RESPONSE"
+
+  if echo "$TEST_RESPONSE" | grep -q "TestMacro05: THERMO1 Test: PASS"; then
     echoE "  "
-    drawError "TEST$testNUM: $fanpin Operation Check" "LED/Strip LED Not Lit"
-    logFileImage="$logFileImage\nTEST$testNUM: $fanpin LED Operation Check: LED/Strip LED Not Lit"
+  else
+    if echo "$TEST_RESPONSE" | grep -q "TestMacro05: Check THERMO1 Connection to Thermistor"; then
+      drawError "TEST$testNumString: THERMO1 Temperature Test" "Check Thermistor THERMO1 Connection to Board Under Test"
+      logFileImage="$logFileImage\nTEST$testNumString: Check Thermistor THERMO1 Connection to Board Under Test"
+      exit
+    else
+      drawError "TEST$testNumString: THERMO1 Temperature Test" "Invalid Thermistor Temperature Value Read"
+      logFileImage="$logFileImage\nTEST$testNumString: Invalid THERMO1 Thermistor Temperature Value Read"
+      exit
+    fi
+  fi
+########################################################################
+fi
+
+
+doSetHeater=0
+if [[ 0 != $doSetHeater ]]; then
+########################################################################
+# Set HEATER0 Temperature to 40C
+########################################################################
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
+
+  echo -e  "$outline$PHULLSTRING"
+  doAppend "!TEST$testNumString: Set HEATER0 Temperature to 40C"
+  logFileImage="$logFileImage\nTEST$testNumString: Set HEATER0 Temperature to 40C"
+
+  echo -ne "TESTMACRO06\n" > "$TTY" || true
+
+  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+  echoE "$TEST_RESPONSE"
+
+  if echo "$TEST_RESPONSE" | grep -q "TestMacro06: HEATER0 Set to 40"; then
+    echoE "  "
+  else
+    drawError "TEST$testNumString: Set HEATER0 Temperature to 40C" "Unable to Set HEATER0 Temperature"
+    logFileImage="$logFileImage\nTEST$testNumString: Unable to Set HEATER0 Temperature"
+    heatersOff
     exit
   fi
-done  
 
+########################################################################
+# Set HEATER1 Temperature to 40C
+########################################################################
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
+
+  echo -e  "$outline$PHULLSTRING"
+  doAppend "!TEST$testNumString: Set HEATER1 Temperature to 40C"
+  logFileImage="$logFileImage\nTEST$testNumString: Set HEATER1 Temperature to 40C"
+
+  echo -ne "TESTMACRO07\n" > "$TTY" || true
+
+  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+  echoE "$TEST_RESPONSE"
+
+  if echo "$TEST_RESPONSE" | grep -q "TestMacro07: HEATER1 Set to 40"; then
+    echoE "  "
+  else
+    drawError "TEST$testNumString: Set HEATER1 Temperature to 40C" "Unable to Set HEATER1 Temperature"
+    logFileImage="$logFileImage\nTEST$testNumString: Unable to Set HEATER1 Temperature"
+    heatersOff
+    exit
+  fi
+########################################################################
+fi
+
+doADXLCheck=0
+if [[ 0 != $doADXLCheck ]]; then
+########################################################################
+# Check ADXL345 Presence
+########################################################################
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
+
+  echo -e  "$outline$PHULLSTRING"
+  doAppend "!TEST$testNumString: Check ADXL345 Presenece"
+  logFileImage="$logFileImage\nTEST$testNumString: Check ADXL345 Presenece"
+
+  echo -ne "DMTESTMACRO01\n" > "$TTY" || true
+
+  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+  echoE "$TEST_RESPONSE"
+
+  if echo "$TEST_RESPONSE" | grep -q "READ_ADXL: ADXL345 Present"; then
+    echoE "  "
+  else
+    drawError "TEST$testNumString: No BLTouch Detected"
+    logFileImage="$logFileImage\nTEST$testNumString: No BLTouch Detected"
+    heatersOff
+    exit
+  fi
+########################################################################
+fi
+
+doBLTouchCheck=0
+if [[ 0 != $doBLTouchCheck ]]; then
+########################################################################
+# Check BLTouch Presence
+########################################################################
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
+
+  echo -e  "$outline$PHULLSTRING"
+  doAppend "!TEST$testNumString: Check BLTouch Presenece"
+  logFileImage="$logFileImage\nTEST$testNUM: Check BLTouch Presenece"
+
+  echo -ne "DMTESTMACRO02\n" > "$TTY" || true
+
+  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+  echoE "$TEST_RESPONSE"
+
+  if echo "$TEST_RESPONSE" | grep -q "BLT Object=0"; then
+    echoE "  "
+  else
+    drawError "TEST$testNumString: No ADXL345 Detected"
+    logFileImage="$logFileImage\nTEST$testNumString: No ADXL345 Detected"
+    heatersOff
+    exit
+  fi
+########################################################################
+fi
+
+doSensorCheck=0
+if [[ 0 != $doSensorCheck ]]; then
+########################################################################
+# Loop Through Check DSENSOR# Operation
+########################################################################
+  dSensorPins=("dsensor0pin" "dsensor1pin" "dsensor2pin" "dsensor3pin" "dsensor4pin") 
+  expectedPin=1
+  for dSensorpin in "${dSensorPins[@]}"; do
+    testNum=$((testNum + 1))
+    testNumString=$(makeTestNUMString "$testNum")
+
+    echo -e  "$outline$PHULLSTRING"
+    doAppend "!TEST$testNumString: Check $dSensorpin Operation"
+    logFileImage="$logFileImage\nTEST$testNumString: Check $dSensorpin Operation"
+
+    echo -ne "SET_PIN PIN=$dSensorpin VALUE=1\n" > "$TTY" || true
+
+    sleep 1
+
+    echo -ne "GETDSENSORVALUE\n" > "$TTY" || true
+
+    TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+
+    echoE "$TEST_RESPONSE"
+
+    if echo "$TEST_RESPONSE" | grep -q "dsensorvalue=$expectedPin"; then
+      echoE " "
+      Yn=$(checkLED "$testNumString" "$dSensorpin")
+
+      echo -ne "SET_PIN PIN=$dSensorpin VALUE=0\n" > "$TTY" || true
+
+      if [[ "Y" == "$Yn" ]]; then
+        echoE "  "
+        echoE   "TEST$testNumString: $dSensorpin LED Active"
+        echoE "  "
+      else
+        heatersOff
+        echoE "  "
+        drawError "TEST$testNumString: $dSensorpin LED Active Check" "LED Not Lit"
+        logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin LED Active Check: LED Not Lit"
+        exit
+      fi
+    else
+      heatersOff
+      drawError "TEST$testNumString: $dSensorpin Not Active"
+      logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Not Active"
+      heatersOff
+      exit
+    fi
+
+    expectedPin=$((expectedPin * 2))
+  
+    echo -ne "SET_PIN PIN=$dSensorpin VALUE=0\n" > "$TTY" || true
+  done
+########################################################################
+fi
+
+doFanCheck=0
+if [[ 0 != $doFanCheck ]]; then
+########################################################################
+# Loop Through Check FAN# Operation
+########################################################################
+  fanPins=("fan0" "fan1" "fan2" "fan3") 
+  for fanpin in "${fanPins[@]}"; do
+    testNum=$((testNum + 1))
+    testNumString=$(makeTestNUMString "$testNum")
+
+    echo -e  "$outline$PHULLSTRING"
+    doAppend "!TEST$testNUM: Check $fanpin Operation"
+    logFileImage="$logFileImage\nTEST$testNUM: Check $fanpin Operation"
+
+    echo -ne "SET_FAN_SPEED FAN=$fanpin SPEED=0.1\n" > "$TTY" || true
+
+    sleep 1
+
+    echoE " "
+    Yn=$(checkLED "$testNUM" "$fanpin")
+
+    echo -ne "SET_FAN_SPEED FAN=$fanpin SPEED=0\n" > "$TTY" || true
+
+    if [[ "Y" == "$Yn" ]]; then
+      echoE "  "
+      echoE   "TEST$testNUM: $fanpin Driver Active"
+      echoE "  "
+    else
+      heatersOff
+      echoE "  "
+      drawError "TEST$testNUM: $fanpin Operation Check" "LED/Strip LED Not Lit"
+      logFileImage="$logFileImage\nTEST$testNUM: $fanpin LED Operation Check: LED/Strip LED Not Lit"
+      exit
+    fi
+  done  
+########################################################################
+fi
 
 
 
