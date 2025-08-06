@@ -411,7 +411,7 @@ xx. Check Numpy installation using: `~/klippy-env/bin/python -c 'import numpy;'`
 
 ![Katapult Active](images/Katapult_Active.png)
 
-61. Using the USB Serial Address found in the Previous Step, Flash the DFU Mode Enable firmware using the command `python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/serial/by-id/<USB ADDRESS FOUND IN PREVIOUS STEP>
+61. Using the USB Serial Address found in the Previous Step, Flash the DFU Mode Enable firmware using the command `python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/serial/by-id/&lsaquo;USB ADDRESS FOUND IN PREVIOUS STEP&rsaquo;
 
 62. This will result in the DFU repeatedly Flashing three times quickly followed by one lone flash
 
