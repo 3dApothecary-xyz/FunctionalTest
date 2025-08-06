@@ -316,12 +316,12 @@
     * If asked to try out KIAUH 6 enter `3` which is `3) Yes, remember my choice for next time`
     * Select `2) [Update]`
     * if Option `9) System` does NOT say `No upgrades available.` then:
-    *       Select `9) System`
-    *       Wait for System Updates to complete
-    *       Select `B) << Back` to exit Update Panel
-    *       Select `Q) Quit` to leave KIAUH
-    *       `./kiauh/kiauh.sh` to restart KIAUH
-    *       Select `2)[Update]` to return to KIAUH Update Screen
+        * Select `9) System`
+        * Wait for System Updates to complete
+        * Select `B) << Back` to exit Update Panel
+        * Select `Q) Quit` to leave KIAUH
+        * `./kiauh/kiauh.sh` to restart KIAUH
+        * Select `2)[Update]` to return to KIAUH Update Screen
    
 41. Select `B) << Back` to exit Update Panel
     * Select `1) [Install]` to go to Klipper Installation Panel
