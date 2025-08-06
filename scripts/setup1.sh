@@ -5,10 +5,12 @@
 # Code here is documented at: https://github.com/3dApothecary-xyz/FunctionalTest/tree/main?tab=readme-ov-file#functional-test-process
 
 # To execute from the Raspberry Pi CM4 from Startup run:
-# curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/setup.sh | bash
+# curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/setup1.sh | bash
 
 ftVersion() {
   ver="0.01" # Initial Version copied from ft.sh and setup process documented on GitHub
+  ver="0.02" # Name changed to "setup1.sh" as there are expected to be multiples
+             # Adding additional headers to separate out the commands
   echo "$ver"
 }
 
@@ -281,8 +283,8 @@ $PHULLSTRING"
 clearScreen
 drawSplashScreen
 
+echo -e " "
 drawHeader "Update System/Load Basic Utilities"
-echo -e "$outline$PHULLSTRING$BASE"
 
 sudo apt update
 
