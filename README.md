@@ -401,7 +401,9 @@ xx. Check Numpy installation using: `~/klippy-env/bin/python -c 'import numpy;'`
 
 ![KGP 4x2209 Initial DFU Mode Check](images/KGP_4x2209_DFU_Mode.png)
 
-58. If KGP 4x2209 is **NOT** in DFU mode (no "ID" `0483:df11` found).  Press the `BOOT0` Button followed by the Pressing the `RESET` button, releasing the `RESET` button and then release the `BOOT0` button.  Repeat the `lsusb` and Orange LED check.
+58. If KGP 4x2209 is **NOT** in DFU mode (no "ID" `0483:df11` found):
+    * If a NewHat3 is on the board execute `python python/enableDFU.py`
+    * Else press the `BOOT0` Button followed by the Pressing the `RESET` button, releasing the `RESET` button and then release the `BOOT0` button.  Repeat the `lsusb` and Orange LED check.
 
 59. Flash Katapult into the KGP 4x2209 board using the command: `sudo dfu-util -a 0 -D ~/katapult/out/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11`
 
