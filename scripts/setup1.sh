@@ -286,9 +286,9 @@ drawSplashScreen
 echo -e " "
 drawHeader "Update System/Load Basic Utilities"
 
-sudo apt update
-
-sudo apt upgrade -y
+#sudo apt update
+#$# Commenting out apt update/apt upgrade to avoid initramfs.conf selection
+#sudo apt upgrade -y
 
 apt-get install git -y
 
