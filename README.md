@@ -375,6 +375,13 @@ xx. Check Numpy installation using: `~/klippy-env/bin/python -c 'import numpy;'`
 
 ### Make Firmware Images
 
+54. Make `klipper.bin` for Board Under Test 
+    * `make menuconfig` - Match settings with screen shot below and enter `Q` followed by `Y` to save
+![Katapult menuconfig settings](images/klipper_menuconfig_2.png)
+    * `make clean`
+    * `make`
+    * `cp out/klipper.bin ~/bin`
+
 53. Make `katapult.bin` for Board Under Test 
     * `cd ~/katapult`
     * `make menuconfig` - Match settings with screen shot below and enter `Q` followed by `Y` to save
@@ -382,14 +389,6 @@ xx. Check Numpy installation using: `~/klippy-env/bin/python -c 'import numpy;'`
     * `make clean`
     * `make`
     * `cp out/katapult.bin ~/bin`
-
-54. Make `klipper.bin` for Board Under Test 
-    * `cd ~/klipper`
-    * `make menuconfig` - Match settings with screen shot below and enter `Q` followed by `Y` to save
-![Katapult menuconfig settings](images/klipper_menuconfig_2.png)
-    * `make clean`
-    * `make`
-    * `cp out/klipper.bin ~/bin`
     * `cd ~`
 
 55. `chmod 777 bin/*.bin`
