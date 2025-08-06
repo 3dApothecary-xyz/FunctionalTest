@@ -290,7 +290,7 @@ drawHeader "Update System/Load Basic Utilities"
 #$# Commenting out apt update/apt upgrade to avoid initramfs.conf selection
 #sudo apt upgrade -y
 
-apt-get install git -y
+sudo apt-get install git -y
 
 ########################################################################
 echo -e " "
