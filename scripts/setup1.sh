@@ -144,8 +144,8 @@ headerName="$1"
   version=$(ftVersion) 
   headerLength=${#headerName}
   versionLength=${#version}
-  stringLength=$(( displayWidth - ( 4 + 4 + 4 + 1 + versionLength + headerLength )))
-  echo -e "##$highlight  FT $version ${EMPTYSTRING:0:$stringLength} ${1}  $outline##"
+  stringLength=$(( displayWidth - ( 6 + 4 + 4 + 1 + versionLength + headerLength )))
+  echo -e "##$highlight  SDSS $version ${EMPTYSTRING:0:$stringLength} ${1}  $outline##"
   logsLength=${#logFileName}
   stringLength=$(( displayWidth - ( 4 + 4 + logsLength )))
   echo -e "##$highlight  $logFileName ${EMPTYSTRING:0:$stringLength} $outline##"
@@ -283,8 +283,10 @@ $PHULLSTRING"
 clearScreen
 drawSplashScreen
 
+########################################################################
 echo -e " "
 drawHeader "Update System/Load Basic Utilities"
+########################################################################
 
 #sudo apt update
 #$# Commenting out apt update/apt upgrade to avoid initramfs.conf selection
