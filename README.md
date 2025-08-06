@@ -219,12 +219,14 @@
 ![ifconfig Results](images/ifconfigResults.png)
 
 18. Enter `sudo apt update`
+    * **NOTE:** This needs to be entered manually and cannot be done in a script
 
-19. Enter `sudo apt upgrade -y`
+20. Enter `sudo apt upgrade`
+    * **NOTE:** This needs to be entered manually and cannot be done in a script
 
-20. `sudo apt-get install git -y`
+21. `sudo apt-get install git -y`
 
-21. Load Pyserial for Katapult operation using `sudo apt install python3 python3-serial -y`
+22. Load Pyserial for Katapult operation using `sudo apt install python3 python3-serial -y`
 
 ### Download Raspberry Pi & NewHat2 GPIO Utilities from GitHub
 
