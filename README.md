@@ -432,7 +432,7 @@ xx. Check Numpy installation using: `~/klippy-env/bin/python -c 'import numpy;'`
 
 ![Klipper CAN Bus UUID](images/CAN_UUID.png)
 
-67. Create an `mcu.cfg` file using the command: `printf "[mcu]\ncanbus_uuid: fc86d6d0415a\n" > ~/printer_data/config/mcu.cfg` with the correct UUID for the KGP 4x2209 that was found previously
+67. Create an `mcu.cfg` file using the command: `printf "[mcu]\ncanbus_uuid: {UUID FOUND IN PREVIOUS STEP}\n" > ~/printer_data/config/mcu.cfg`
 
 68. `sudo service klipper start`
 
