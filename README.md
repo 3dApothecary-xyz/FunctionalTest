@@ -516,7 +516,7 @@ install_script: install.sh
 
 87. Flash the Toolhead Controller with Katapult using the command: `sudo dfu-util -a 0 -D ~/katapult/out/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11`
 
-88. Power Down the KGP 4x2209 after `sudo shutdown now` has executed
+88. `sudo shutdown now` followed by Turning off Power when White CM4 LED stops flashing
 
 89. With Power off, unplug the Toolhead Controller from the KGP 4x2209 USB port and reattach it using the CAN connection
 
