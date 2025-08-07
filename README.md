@@ -407,7 +407,7 @@ xx. Check Numpy installation using: `~/klippy-env/bin/python -c 'import numpy;'`
 
 59. Flash Katapult into the KGP 4x2209 board using the command: `sudo dfu-util -a 0 -D ~/katapult/out/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11`
 
-60. Check for Katapult active by verifying the flashing LED on KGP 4x2209 and use the `ls /dev/serial/by-id` to check if has a USB address using `ls /dev/serial/by-id`
+60. Check for Katapult active by verifying the flashing LED on KGP 4x2209 and then enter `ls /dev/serial/by-id` to display the USB Device Address
 
 ![Katapult Active](images/Katapult_Active.png)
 
@@ -418,7 +418,7 @@ xx. Check Numpy installation using: `~/klippy-env/bin/python -c 'import numpy;'`
     * If a NewHat3 is on the board execute `python ~/python/enableKatapult.py` which will enable Katapult and the DFU LED will flash on and off regularly
     * Else Press `RESET` twice quickly which will enable Katapult and the DFU LED will flash on and off regularly
 
-63. Check for Katapult active by verifying the flashing LED on KGP 4x2209 and use the `ls /dev/serial/by-id` to check if has a USB address using `ls /dev/serial/by-id`
+63. Check for Katapult active by verifying the flashing LED on KGP 4x2209 and then enter `ls /dev/serial/by-id` to display the USB Device Address
 
 ![Katapult Active](images/Katapult_Active.png)
     
