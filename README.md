@@ -412,12 +412,17 @@ xx. Check Numpy installation using: `~/klippy-env/bin/python -c 'import numpy;'`
 ![Katapult Active](images/Katapult_Active.png)
 
 61. Using the USB Serial Address found in the Previous Step, Flash the DFU Mode Enable firmware using the command `python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/serial/by-id/{USB ADDRESS FOUND IN PREVIOUS STEP}`
+    * This will result in the DFU repeatedly Flashing three times quickly followed by one lone flash
 
-62. This will result in the DFU repeatedly Flashing three times quickly followed by one lone flash
+62. Enable Katapult again.
+    * If a NewHat3 is on the board execute `python ~/python/enableKatapult.py` which will enable Katapult and the DFU LED will flash on and off regularly
+    * Else Press `RESET` twice quickly which will enable Katapult and the DFU LED will flash on and off regularly
 
-63. `python ~/python/enableKatapult.py` which will enable Katapult and the DFU LED will flash on and off regularly
+63. Check for Katapult active by verifying the flashing LED on KGP 4x2209 and use the `ls /dev/serial/by-id` to check if has a USB address using `ls /dev/serial/by-id`
+
+![Katapult Active](images/Katapult_Active.png)
     
-64. Using the USB Serial Address found in the Previous Steps, Flash Klipper using the command `python3 ~/katapult/scripts/flashtool.py -f ~/bin/klipper.bin -d /dev/serial/by-id/usb-katapult_stm32g0b1xx_1A003E001050505933383420-if00` (which is using the USB address found previously)
+64. Using the USB Serial Address found in the Previous Step, Flash Klipper using the command `python3 ~/katapult/scripts/flashtool.py -f ~/bin/klipper.bin -d /dev/serial/by-id/{USB ADDRESS FOUND IN PREVIOUS STEP}`
 
 65. Check to see that Klipper was installed using the command `ip -s -d link show can0` with the expected result:
 
