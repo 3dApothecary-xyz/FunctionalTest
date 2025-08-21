@@ -2,7 +2,6 @@
 
 # Script to simplify Functional Test Micro SD Card setup
 # Execute with "curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/ftload1.sh | bash"
-# Steps 22 through 26
 mkdir python
 cd python
 wget -O cycle38.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycle38.py?raw=true
@@ -24,12 +23,9 @@ cd bin
 wget -O nada.bin https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/bin/nada.bin?raw=true
 wget -O KGP_4x2209_DFU.bin https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/bin/KGP_4x2209_DFU.bin?raw=true
 cd ~
-# Steps 35, 36 and 40
 git clone https://github.com/dw-0/kiauh.git
 git clone https://github.com/Arksine/katapult
-# Steps 27 through 34 follow
-# Step 37 (Reboot)
-# Continue from Step 43
+
 # Reverse Steps 57 and 58 (might as well force the board into DFU Mode)
 # Step 69: Note that printer.cfg can also be cut and pasted into printer.cfg on Mainsail
 # Step 71: ./scripts/loaddynamicmacros.sh
