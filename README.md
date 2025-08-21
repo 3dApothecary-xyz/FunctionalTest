@@ -470,8 +470,6 @@ install_script: install.sh
 
 ![Dynamic Macros Installed in Printer.cfg](images/Dynamic_Macros_in_printer-cfg.png)
 
-# Stopped Here
-
 ### Flash Toolhead Controller
 
 78. On EBB42, Put in `120R` and `VBUS` Jumpers
