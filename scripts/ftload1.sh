@@ -1,3 +1,7 @@
+#!/bin/bash
+
+# Script to simplify Functional Test Micro SD Card setup
+# Execute with "curl -s <URL_OF_SCRIPT> | bash"
 # Steps 22 through 26
 mkdir python
 cd python
