@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to simplify Functional Test Micro SD Card setup
-# Execute with "curl -s <URL_OF_SCRIPT> | bash"
+# Execute with "curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/ftload1.sh | bash"
 # Steps 22 through 26
 mkdir python
 cd python
@@ -27,7 +27,6 @@ cd ~
 # Steps 35, 36 and 40
 git clone https://github.com/dw-0/kiauh.git
 git clone https://github.com/Arksine/katapult
-./kiauh/kiauh.sh
 # Steps 27 through 34 follow
 # Step 37 (Reboot)
 # Continue from Step 43
