@@ -226,51 +226,70 @@
     * **NOTE:** This needs to be entered manually and cannot be done in a script
 
 20. Enter `sudo apt upgrade`
-    * **NOTE:** This needs to be entered manually and cannot be done in a script
+    * **NOTE:** Don NOT put `-y` at end of command.  Responses beyond "Y" may be required
 
 21. `sudo apt-get install git -y`
 
 22. Load Pyserial for Katapult operation using `sudo apt install python3 python3-serial -y`
 
-### Download Raspberry Pi & NewHat2 GPIO Utilities from GitHub
+### Download Raspberry Pi & NewHat3a GPIO Utilities from GitHub
 
-22. Dowload python utilities:
-    * `mkdir python`
-    * `cd python`
-    * `wget -O cycle38.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycle38.py?raw=true`
-    * `wget -O cycleRESET.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycleRESET.py?raw=true`
-    * `wget -O enableDFU.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/enableDFU.py?raw=true`
-    * `wget -O enableKatapult.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/enableKatapult.py?raw=true`
-    * `wget -O toggleBOOT0.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/toggleBOOT0.py?raw=true`
-    * `chmod 777 *.py`
-    * `cd ~`
+22. Execute bash script using:
+    
+    `curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/ftload1.sh | bash`
+    
+    * Dowload python utilities:
+        * `mkdir python`
+        * `cd python`
+        * `wget -O cycle38.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycle38.py?raw=true`
+        * `wget -O cycleRESET.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycleRESET.py?raw=true`
+        * `wget -O enableDFU.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/enableDFU.py?raw=true`
+        * `wget -O enableKatapult.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/enableKatapult.py?raw=true`
+        * `wget -O gpioread.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/gpioread.py?raw=true`
+        * `wget -O toggleBOOT0.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/toggleBOOT0.py?raw=true`
+        * `chmod 777 *.py`
+        * `cd ~`
+
+    * Dowload Functional Test Script:
+        * `mkdir scripts`
+        * `cd scripts`
+        * `wget -O ft.sh https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/scripts/ft.sh?raw=true`
+        * `chmod 777 *.sh`
+        * `cd ~`
       
-23. Test python operation with: `python python/cycle38.py`
+    * Create `logs` directory
+        * `mkdir logs`
+
+    * Download Premade Firmare Images
+        * `mkdir bin`
+        * `cd bin`
+        * `wget -O nada.bin https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/bin/nada.bin?raw=true`
+        * `wget -O KGP_4x2209_DFU.bin https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/bin/KGP_4x2209_DFU.bin?raw=true`
+        * `cd ~`
+
+    * Load Klipper & Katapult using KIAUH
+        * `git clone https://github.com/dw-0/kiauh.git`
+        * `git clone https://github.com/Arksine/katapult`
+        * `./kiauh/kiauh.sh`
+        
+24. Process for Klipper/Moonraker/Mainsail install using KIAUH
+    * If asked to try out KIAUH 6 enter `3` which is `3) Yes, remember my choice for next time`
+        * Select `2) [Update]`
+        * if Option `9) System` does NOT say `No upgrades available.` then:
+            * Select `9) System`
+            * Wait for System Updates to complete
+        * Select `B) << Back` to exit Update Panel
+        * Select `1) [Install]` to go to Klipper Installation Panel
+        * Select `1) [Klipper]` to Install Klipper on the Raspberry Pi CM4.  Select default options when prompted
+        * Select `2) [Moonraker]` to Install Moonraker on the Raspberry Pi CM4.  Select default options when prompted
+        * Select `3) [Mainsail]` to Install Mainsail on the Raspberry Pi CM4.  Select default options when prompted
+        * Select `B) << Back` to return to the main menu
+        * Select `Q) Quit` to exit KIAUH
+
+25. Check Klipper installation by loading the Mainsail webpage: `http://kgpft1`
+
+26. Test python operation with: `python python/cycle38.py`
     * Check Pin 38 on KGP 4x2209's Raspberry Pi 40Pin Connector with a DMM: Pin should be cycling between 0V and 3.3V every 2 Seconds
-
-### Download Functional Test Script 
-
-24. Dowload Functional Test Script:
-    * `mkdir scripts`
-    * `cd scripts`
-    * `wget -O ft.sh https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/scripts/ft.sh?raw=true`
-    * `chmod 777 *.sh`
-    * `cd ~`
-
-### Create `logs` directory
-      
-25. `mkdir logs`
-
-### Copy  Firmware Images
-
-26. Download Premade Firmare Images
-    * `mkdir bin`
-    * `cd bin`
-    * `wget -O nada.bin https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/bin/nada.bin?raw=true`
-    * `wget -O KGP_4x2209_DFU.bin https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/bin/KGP_4x2209_DFU.bin?raw=true`
-    * `cd ~`
-
-**NOTE:** `KGP_4x2209_DFU.bin` was modeled on `MINI_E3_V3_DFU.bin`
 
 ### Enable CANBus Operation
 
@@ -298,15 +317,6 @@
 
 ![CAN Network Check Response](images/CAN_network_check.png)
 
-### Load Klipper & Katapult using KIAUH
-
-* Following instruction found at: [GitHub KIAUH Repository](https://github.com/dw-0/kiauh)
-
-35. `git clone https://github.com/dw-0/kiauh.git`
-
-* Following instruction found at: [GitHub Katapult Repository](https://github.com/Arksine/katapult)
-   
-36. `git clone https://github.com/Arksine/katapult`
 
 ### Reboot to Setup CAN Features
 
@@ -316,26 +326,6 @@
 
 39. Run `python python/cycle38.py` to make sure everkything is okay
 
-40. `./kiauh/kiauh.sh`
-    * If asked to try out KIAUH 6 enter `3` which is `3) Yes, remember my choice for next time`
-    * Select `2) [Update]`
-    * if Option `9) System` does NOT say `No upgrades available.` then:
-        * Select `9) System`
-        * Wait for System Updates to complete
-        * Select `B) << Back` to exit Update Panel
-        * Select `Q) Quit` to leave KIAUH
-        * `./kiauh/kiauh.sh` to restart KIAUH
-        * Select `2)[Update]` to return to KIAUH Update Screen
-   
-41. Select `B) << Back` to exit Update Panel
-    * Select `1) [Install]` to go to Klipper Installation Panel
-    * Select `1) [Klipper]` to Install Klipper on the Raspberry Pi CM4.  Select default options when prompted
-    * Select `2) [Moonraker]` to Install Moonraker on the Raspberry Pi CM4.  Select default options when prompted
-    * Select `3) [Mainsail]` to Install Mainsail on the Raspberry Pi CM4.  Select default options when prompted
-    * Select `B) << Back` to return to the main menu
-    * Select `Q) Quit` to exit KIAUH
-
-42. Check Klipper installation by loading the Mainsail webpage: `http://kgpft1`
 
 ![kgpft1 Mainsail Webpage](images/Mainsail_Webpage.png)
 
