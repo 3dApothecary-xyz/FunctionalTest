@@ -2,6 +2,8 @@
 
 # Script to simplify Functional Test Micro SD Card setup
 # Execute with "curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/ftload1.sh | bash"
+sudo apt-get install git -y
+sudo apt install python3 python3-serial -y
 mkdir python
 cd python
 wget -O cycle38.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycle38.py?raw=true
