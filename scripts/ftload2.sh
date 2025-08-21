@@ -10,3 +10,8 @@ wget -O read_tmc_field.py https://github.com/3dApothecary-xyz/FunctionalTest/blo
 chmod 777 dynamic.cfg
 chmod 777 *.py
 cd ~
+git clone https://github.com/3DCoded/DynamicMacros
+cd DynamicMacros
+sh install.sh
+sudo service klipper restart
+cd ~
