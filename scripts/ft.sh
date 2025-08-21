@@ -24,7 +24,7 @@ ftVersion() {
              # Put in Loop Code to Check DSENSORs rather than individual test blocks
   ver="0.09" # Added ability to allow Running Checks with simple flags
              # Updates for NewHat3
-
+  ver="0.10" # Updates for NewHat3a/HeaterBoard
   echo "$ver"
 }
 
