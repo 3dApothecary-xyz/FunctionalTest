@@ -213,7 +213,7 @@
 15. Wait 5 minutes for first boot of the Raspberry Pi CM4
 
 16. Using a computer which is connected to the same network as the Ethernet internet connection used by the `KGP 4x2209`:
-    * Start up a terminal window (No need for PuTTY)
+    * Start up a "Command Prompt" (Windows) or "Terminal" (MacOS and Linux).  There is no need for PuTTY/Tera Term/etc.  
     * SSH into the board using `ssh biqu@kgpft1`
     * Enter `yes` if the question appears: "The authenticity of host 'kgpft1 ... Are you sure you want to continue connecting (yes/no/[fingerprint])?"
     * Enter the password `biqu`
