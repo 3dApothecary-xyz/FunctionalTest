@@ -25,6 +25,8 @@ ftVersion() {
   ver="0.09" # Added ability to allow Running Checks with simple flags
              # Updates for NewHat3
   ver="0.10" # Updates for NewHat3a/HeaterBoard
+             # Updates for changes in printer.cfg for VIN, MCU and Toolhead presence/temperature/voltage checks
+             # Removed expdlicit ADXL345 & BLTouch Tests
   echo "$ver"
 }
 
@@ -41,6 +43,9 @@ ftVersion() {
 # BashDB Download: https://sourceforge.net/projects/bashdb/files/bashdb/5.0-1.1.2/bashdb-5.0-1.1.2.tar.gz/download
 # To Extract BashDB: tar -xvzf bashdb-5.0-1.1.2.tar.gz
 # sudo nano ~/bashdb-5.0-1.1.2/configure 
+# if Raspberry Pi:
+#     Search for ".0'" using ^W and change to ".2' | '5.2')"
+# if BTT CB1:
 #     Search for ".0'" using ^W and change to ".1' | '5.1')"
 # ./configure
 # make
@@ -885,13 +890,13 @@ echo -e  "$outline$PHULLSTRING"
 doAppend "!TEST$testNumString: VINMON"
 logFileImage="$logFileImage\nTEST$testNumString: VINMON"
 
-echo -ne "TESTMACRO01\n" > "$TTY" || true
+echo -ne "VINTEST\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echoE "$TEST_RESPONSE"
 
-if echo "$TEST_RESPONSE" | grep -q "TestMacro01: VINMON Test: PASS"; then
+if echo "$TEST_RESPONSE" | grep -q "VINTest: PASS"; then
   echoE "  "
 else
   drawError "TEST$testNumString: VINMON" "Invalid Voltage Read"
@@ -909,13 +914,13 @@ echo -e  "$outline$PHULLSTRING"
 doAppend "!TEST$testNumString: MCU Temperature"
 logFileImage="$logFileImage\nTEST$testNumString: MCU Temperature"
 
-echo -ne "TESTMACRO02\n" > "$TTY" || true
+echo -ne "MCUTEST\n" > "$TTY" || true
 
 TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
 echoE "$TEST_RESPONSE"
 
-if echo "$TEST_RESPONSE" | grep -q "TestMacro02: MCU Temperature Test: PASS"; then
+if echo "$TEST_RESPONSE" | grep -q "MCUTest: PASS"; then
   echoE "  "
 else
   drawError "TEST$testNumString: MCU Temperature Test" "Invalid MCU Temperature Value Read"
@@ -923,8 +928,8 @@ else
   exit
 fi
 
-doTemperatureCheck=0
-if [[ 0 != $doTemperatureCheck ]]; then
+doToolheadTemperatureCheck=1
+if [[ 0 != $doToolheadTemperatureCheck ]]; then
 ########################################################################
 # Toolhead Temperature
 ########################################################################
@@ -935,80 +940,55 @@ if [[ 0 != $doTemperatureCheck ]]; then
   doAppend "!TEST$testNumString: Toolhead Temperature"
   logFileImage="$logFileImage\nTEST$testNumString: Toolhead Temperature"
 
-  echo -ne "TESTMACRO03\n" > "$TTY" || true
+  echo -ne "TOOLHEADTEST\n" > "$TTY" || true
 
   TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
   echoE "$TEST_RESPONSE"
 
-  if echo "$TEST_RESPONSE" | grep -q "TestMacro03: Toolhead Temperature Test: PASS"; then
+  if echo "$TEST_RESPONSE" | grep -q "ToolheadTest: PASS"; then
     echoE "  "
   else
     drawError "TEST$testNumString: Toolhead Temperature Test" "Invalid Toolhead Temperature Value Read"
     logFileImage="$logFileImage\nTEST$testNumString: Invalid Toolhead Temperature Value Read"
     exit
   fi
+fi
 
+doThermoTemperatureCheck=1
+if [[ 0 != $doThermoTemperatureCheck ]]; then
 ########################################################################
-# THERMO0 Temperature
+# Loop Through Thermistor Precision Resistor "Temperature" Test
 ########################################################################
-  testNum=$((testNum + 1))
-  testNumString=$(makeTestNUMString "$testNum")
+  ThermistorNumber=("0" "1") 
+  for thermNum in "${ThermistorNumber[@]}"; do
+    testNum=$((testNum + 1))
+    testNumString=$(makeTestNUMString "$testNum")
 
-  echo -e  "$outline$PHULLSTRING"
-  doAppend "!TEST$testNumString: THERMO0 Temperature"
-  logFileImage="$logFileImage\nTEST$testNumString: THERMO0 Temperature"
+    echo -e  "$outline$PHULLSTRING"
+    doAppend "!TEST$testNumString: THERMO$thermNum Temperature"
+    logFileImage="$logFileImage\nTEST$testNumString: THERMO$thermNum Temperature"
 
-  echo -ne "TESTMACRO04\n" > "$TTY" || true
+    echo -ne "THERMTEST VALUE=$thermNum\n" > "$TTY" || true
 
-  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+    TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
 
-  echoE "$TEST_RESPONSE"
+    echoE "$TEST_RESPONSE"
 
-  if echo "$TEST_RESPONSE" | grep -q "TestMacro04: THERMO0 Test: PASS"; then
-    echoE "  "
-  else
-    if echo "$TEST_RESPONSE" | grep -q "TestMacro04: Check THERMO0 Connection to Thermistor"; then
-      drawError "TEST$testNumString: THERMO0 Temperature Test" "Check Thermistor THERMO0 Connection to Board Under Test"
-      logFileImage="$logFileImage\nTEST$testNumString: Check Thermistor THERMO0 Connection to Board Under Test"
-      exit
+    if echo "$TEST_RESPONSE" | grep -q "ThermTest: thermo$thermNum: PASS"; then
+      echoE "  "
     else
-      drawError "TEST$testNumString: THERMO0 Temperature Test" "Invalid THERMO0 Thermistor Temperature Value Read"
-      logFileImage="$logFileImage\nTEST$testNumString: Invalid THERMO0 Thermistor Temperature Value Read"
-      exit
+      if echo "$TEST_RESPONSE" | grep -q "ThermTest: Check thermo$thermNum Connection to HeaterBoard"; then
+        drawError "TEST$testNumString: THERMO$thermNum Temperature Test" "Check Thermistor THERMO$thermNum Connection to Board Under Test"
+        logFileImage="$logFileImage\nTEST$testNumString: Check Thermistor THERMO$thermNum Connection to Board Under Test"
+        exit
+      else
+        drawError "TEST$testNumString: THERMO$thermNum Temperature Test" "Invalid THERMO$thermNum Thermistor Temperature Value Read"
+        logFileImage="$logFileImage\nTEST$testNumString: Invalid THERMO$thermNum Thermistor Temperature Value Read"
+        exit
+      fi
     fi
-  fi
-
-########################################################################
-# THERMO1 Temperature
-########################################################################
-  testNum=$((testNum + 1))
-  testNumString=$(makeTestNUMString "$testNum")
-
-  echo -e  "$outline$PHULLSTRING"
-  doAppend "!TEST$testNumString: THERMO1 Temperature"
-  logFileImage="$logFileImage\nTEST$testNumString: THERMO1 Temperature"
-
-  echo -ne "TESTMACRO05\n" > "$TTY" || true
-
-  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-
-  echoE "$TEST_RESPONSE"
-
-  if echo "$TEST_RESPONSE" | grep -q "TestMacro05: THERMO1 Test: PASS"; then
-    echoE "  "
-  else
-    if echo "$TEST_RESPONSE" | grep -q "TestMacro05: Check THERMO1 Connection to Thermistor"; then
-      drawError "TEST$testNumString: THERMO1 Temperature Test" "Check Thermistor THERMO1 Connection to Board Under Test"
-      logFileImage="$logFileImage\nTEST$testNumString: Check Thermistor THERMO1 Connection to Board Under Test"
-      exit
-    else
-      drawError "TEST$testNumString: THERMO1 Temperature Test" "Invalid Thermistor Temperature Value Read"
-      logFileImage="$logFileImage\nTEST$testNumString: Invalid THERMO1 Thermistor Temperature Value Read"
-      exit
-    fi
-  fi
-########################################################################
+  done
 fi
 
 
@@ -1066,63 +1046,6 @@ if [[ 0 != $doSetHeater ]]; then
 ########################################################################
 fi
 
-doADXLCheck=0
-if [[ 0 != $doADXLCheck ]]; then
-########################################################################
-# Check ADXL345 Presence
-########################################################################
-  testNum=$((testNum + 1))
-  testNumString=$(makeTestNUMString "$testNum")
-
-  echo -e  "$outline$PHULLSTRING"
-  doAppend "!TEST$testNumString: Check ADXL345 Presenece"
-  logFileImage="$logFileImage\nTEST$testNumString: Check ADXL345 Presenece"
-
-  echo -ne "DMTESTMACRO01\n" > "$TTY" || true
-
-  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-
-  echoE "$TEST_RESPONSE"
-
-  if echo "$TEST_RESPONSE" | grep -q "READ_ADXL: ADXL345 Present"; then
-    echoE "  "
-  else
-    drawError "TEST$testNumString: No BLTouch Detected"
-    logFileImage="$logFileImage\nTEST$testNumString: No BLTouch Detected"
-    heatersOff
-    exit
-  fi
-########################################################################
-fi
-
-doBLTouchCheck=0
-if [[ 0 != $doBLTouchCheck ]]; then
-########################################################################
-# Check BLTouch Presence
-########################################################################
-  testNum=$((testNum + 1))
-  testNumString=$(makeTestNUMString "$testNum")
-
-  echo -e  "$outline$PHULLSTRING"
-  doAppend "!TEST$testNumString: Check BLTouch Presenece"
-  logFileImage="$logFileImage\nTEST$testNUM: Check BLTouch Presenece"
-
-  echo -ne "DMTESTMACRO02\n" > "$TTY" || true
-
-  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-
-  echoE "$TEST_RESPONSE"
-
-  if echo "$TEST_RESPONSE" | grep -q "BLT Object=0"; then
-    echoE "  "
-  else
-    drawError "TEST$testNumString: No ADXL345 Detected"
-    logFileImage="$logFileImage\nTEST$testNumString: No ADXL345 Detected"
-    heatersOff
-    exit
-  fi
-########################################################################
-fi
 
 doSensorCheck=0
 if [[ 0 != $doSensorCheck ]]; then
