@@ -29,6 +29,7 @@ ftVersion() {
              # Removed expdlicit ADXL345 & BLTouch Tests
              # Removed "heatersoff" method
              # Updated "dsensor#" tests for NewHat3a demux wiring (with matching updates in printer.cfg)
+             # Added Inductive Sensor Test
   echo "$ver"
 }
 
@@ -549,11 +550,14 @@ logFileName="LOG$logsNumber-$currentDateTime.log"
 clearScreen
 drawSplashScreen
 
-testNum=1
-testNumString=$(makeTestNUMString "$testNum")
+testNum=0
+
+
 ########################################################################
 # Ping Test/Moved to start of tests as primary requirement
 ########################################################################
+testNum=$((testNum + 1))
+testNumString=$(makeTestNUMString "$testNum")
 
 echoE "  "
 echo -e  "$outline$PHULLSTRING"
@@ -564,13 +568,36 @@ pingRESPONSE=$(ping -c 2 klipper.discourse.group)
 
 if echo "$pingRESPONSE" | grep -q "klipper.hosted"; then
   echoE   "TEST$testNumString: Ping Test Complete"
-  echoE "  "
 else
   echoE "  "
   drawError "TEST$testNumString: Ping" "No Response"
   logFileImage="$logFileImage\nTEST$testNumString: Ping No Response"
   exit
 fi
+
+
+########################################################################
+# Check VIN Power Available to HeaterBoard/Moved to start of tests as primary requirement
+########################################################################
+testNum=$((testNum + 1))
+testNumString=$(makeTestNUMString "$testNum")
+
+echoE "  "
+echo -e  "$outline$PHULLSTRING"
+doAppend "!TEST$testNumString: VIN Detection Test"
+logFileImage="$logFileImage\nTEST$testNumString: VIN Detection Test"
+
+RESPONSE=$(python ~/python/gpioread.py 22) || true
+
+if echo "$RESPONSE" | grep -q "Pin State is low"; then
+  echoE   "TEST$testNumString: VIN Connection Test Complete"
+else
+  echoE "  "
+  drawError "TEST$testNumString: VIN Connection" "No VIN Detected on HeaterBoard"
+  logFileImage="$logFileImage\nTEST$testNumString: No VIN Detected on HeaterBoard"
+  exit
+fi
+
 
 ########################################################################
 # Firmware Load Start
@@ -656,8 +683,8 @@ sleep 1
 python ~/python/enableKatapult.py
 
 
-doBasicLEDCheck=0
-if [[ 0 != $doBasicLEDCheck ]]; then
+doLEDCheck=0
+if [[ 0 != $doLEDCheck ]]; then
 ########################################################################
 # Check Power LED Lit
 ########################################################################
@@ -946,6 +973,7 @@ if [[ 0 != $doToolheadTemperatureCheck ]]; then
     logFileImage="$logFileImage\nTEST$testNumString: Invalid Toolhead Temperature Value Read"
     exit
   fi
+########################################################################
 fi
 
 doThermoTemperatureCheck=1
@@ -982,6 +1010,7 @@ if [[ 0 != $doThermoTemperatureCheck ]]; then
       fi
     fi
   done
+########################################################################
 fi
 
 
@@ -1038,8 +1067,8 @@ if [[ 0 != $doSetHeater ]]; then
 fi
 
 
-doSensorCheck=1
-if [[ 0 != $doSensorCheck ]]; then
+doDSensorCheck=1
+if [[ 0 != $doDSensorCheck ]]; then
 ########################################################################
 # Loop Through Check DSENSOR# Operation
 ########################################################################
@@ -1056,7 +1085,7 @@ if [[ 0 != $doSensorCheck ]]; then
 
     echo -ne "GETSENSORVALUE\n" > "$TTY" || true
     TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-    echoE "$dSensorPins Reset State: $TEST_RESPONSE"
+    echoE "$dSensorPin Reset State: $TEST_RESPONSE"
 
     if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
       echoE " "
@@ -1066,11 +1095,15 @@ if [[ 0 != $doSensorCheck ]]; then
 
       echo -ne "GETSENSORVALUE\n" > "$TTY" || true
       TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-      echoE "$dSensorPins Set State: $TEST_RESPONSE"
+      echoE "$dSensorPin Set State: $TEST_RESPONSE"
     
       if echo "$TEST_RESPONSE" | grep -q "sensorvalue=$expectedValue"; then
-        echoE " "
-        Yn=$(checkLED "$testNumString" "$dSensorpin")
+        if [[ 0 != $doLEDCheck ]]; then
+          echoE " "
+          Yn=$(checkLED "$testNumString" "$dSensorpin")
+        else
+          Yn="Y"
+        fi
 
         if [[ "Y" == "$Yn" ]]; then
           echoE "  "
@@ -1094,17 +1127,20 @@ if [[ 0 != $doSensorCheck ]]; then
           fi
         else
           echoE "  "
+          echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
           drawError "TEST$testNumString: $dSensorpin LED Active Check" "LED Not Lit"
           logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin LED Active Check: LED Not Lit"
           exit
         fi
       else
         echoE "  "
+        echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
         drawError "TEST$testNumString: $dSensorpin Set Check" "$dSensorpin NOT Set"
         logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Set Check: $dSensorpin NOT Set"
         exit
       fi
     else
+      echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
       drawError "TEST$testNumString: $dSensorpin Unexpected Active"
       logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Unexpected Active"
       exit
@@ -1113,10 +1149,89 @@ if [[ 0 != $doSensorCheck ]]; then
     expectedPin=$((expectedPin + 1))
     expectedValue=$((expectedValue * 2))
   
-    echo -ne "SET_PIN PIN=$dSensorpin VALUE=0\n" > "$TTY" || true
   done
 ########################################################################
 fi
+
+
+doIndStopCheck=1
+if [[ 0 != $doIndStopCheck ]]; then
+########################################################################
+# Check the Inductive Endstop Sensor Hardware
+########################################################################
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
+
+  echo -e  "$outline$PHULLSTRING"
+  doAppend "!TEST$testNumString: Check Inductive Sensor Operation"
+  logFileImage="$logFileImage\nTEST$testNumString: Check Inductive Sensor Operation"
+
+  echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+  echoE "Inductive Sensor Reset State: $TEST_RESPONSE"
+
+  if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
+    echoE " "
+
+    echo -ne "SETDEMUX VALUE=6\n" > "$TTY" || true
+    sleep 0.5
+
+    echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+    TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+    echoE "Inductive Sensor Set State: $TEST_RESPONSE"
+    
+    if echo "$TEST_RESPONSE" | grep -q "sensorvalue=32"; then
+      if [[ 0 != $doLEDCheck ]]; then
+        echoE " "
+        Yn=$(checkLED "$testNumString" "Inductive")
+      else
+        Yn="Y"
+      fi
+
+      if [[ "Y" == "$Yn" ]]; then
+        echoE "  "
+        echoE   "TEST$testNumString: Inductive Sensor LED Active"
+        echoE "  "
+
+        echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
+        sleep 0.5
+          
+        echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+        TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+        echoE "Inductive Sensor Reset Again State: $TEST_RESPONSE"
+          
+        if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
+          echoE " "
+        else
+          echoE "  "
+          drawError "TEST$testNumString: Inductive Sensor Not Reset" "Inductive Sensor Not Reset"
+          logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor Test: Not Reset"
+          exit
+        fi
+      else
+        echoE "  "
+        echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
+        drawError "TEST$testNumString: Inductive Sensor LED Active Check" "LED Not Lit"
+        logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor LED Active Check: LED Not Lit"
+        exit
+      fi
+    else
+      echoE "  "
+      echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
+      drawError "TEST$testNumString: Inductive Sensor Set Check" "Inductive Sensor NOT Set"
+      logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor Set Check: Inductive Sensor NOT Set"
+      exit
+    fi
+  else
+    echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
+    drawError "TEST$testNumString: Inductive Sensor Unexpected Active"
+    logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor Unexpected Active"
+    exit
+  fi
+########################################################################
+fi
+
+
 
 doFanCheck=0
 if [[ 0 != $doFanCheck ]]; then
