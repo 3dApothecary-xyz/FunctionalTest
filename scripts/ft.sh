@@ -27,6 +27,8 @@ ftVersion() {
   ver="0.10" # Updates for NewHat3a/HeaterBoard
              # Updates for changes in printer.cfg for VIN, MCU and Toolhead presence/temperature/voltage checks
              # Removed expdlicit ADXL345 & BLTouch Tests
+             # Removed "heatersoff" method
+             # Updated "dsensor#" tests for NewHat3a demux wiring (with matching updates in printer.cfg)
   echo "$ver"
 }
 
@@ -107,16 +109,6 @@ applicationDoneMsg="User Requested Application Exit"
 ########################################################################
 # Test Methods
 ########################################################################
-heatersOff() {
-
-  echo -ne "OFFHEATER0\n" > "$TTY" || true
-
-  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-
-  echo -ne "OFFHEATER1\n" > "$TTY" || true
-
-  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-}
 makeTestNUMString() {
   tempTestNUM="$1"
   if [[ 1 -eq ${#tempTestNUM} ]]; then
@@ -878,7 +870,8 @@ fi
 # Functional Tests Continue
 ########################################################################
 
-sleep 2
+#sleep 2
+sleep 1
 
 ########################################################################
 # VINMON
@@ -1015,7 +1008,6 @@ if [[ 0 != $doSetHeater ]]; then
   else
     drawError "TEST$testNumString: Set HEATER0 Temperature to 40C" "Unable to Set HEATER0 Temperature"
     logFileImage="$logFileImage\nTEST$testNumString: Unable to Set HEATER0 Temperature"
-    heatersOff
     exit
   fi
 
@@ -1040,20 +1032,20 @@ if [[ 0 != $doSetHeater ]]; then
   else
     drawError "TEST$testNumString: Set HEATER1 Temperature to 40C" "Unable to Set HEATER1 Temperature"
     logFileImage="$logFileImage\nTEST$testNumString: Unable to Set HEATER1 Temperature"
-    heatersOff
     exit
   fi
 ########################################################################
 fi
 
 
-doSensorCheck=0
+doSensorCheck=1
 if [[ 0 != $doSensorCheck ]]; then
 ########################################################################
 # Loop Through Check DSENSOR# Operation
 ########################################################################
   dSensorPins=("dsensor0pin" "dsensor1pin" "dsensor2pin" "dsensor3pin" "dsensor4pin") 
   expectedPin=1
+  expectedValue=1
   for dSensorpin in "${dSensorPins[@]}"; do
     testNum=$((testNum + 1))
     testNumString=$(makeTestNUMString "$testNum")
@@ -1062,42 +1054,64 @@ if [[ 0 != $doSensorCheck ]]; then
     doAppend "!TEST$testNumString: Check $dSensorpin Operation"
     logFileImage="$logFileImage\nTEST$testNumString: Check $dSensorpin Operation"
 
-    echo -ne "SET_PIN PIN=$dSensorpin VALUE=1\n" > "$TTY" || true
-
-    sleep 1
-
-    echo -ne "GETDSENSORVALUE\n" > "$TTY" || true
-
+    echo -ne "GETSENSORVALUE\n" > "$TTY" || true
     TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+    echoE "$dSensorPins Reset State: $TEST_RESPONSE"
 
-    echoE "$TEST_RESPONSE"
-
-    if echo "$TEST_RESPONSE" | grep -q "dsensorvalue=$expectedPin"; then
+    if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
       echoE " "
-      Yn=$(checkLED "$testNumString" "$dSensorpin")
 
-      echo -ne "SET_PIN PIN=$dSensorpin VALUE=0\n" > "$TTY" || true
+      echo -ne "SETDEMUX VALUE=$expectedPin\n" > "$TTY" || true
+      sleep 0.5
 
-      if [[ "Y" == "$Yn" ]]; then
-        echoE "  "
-        echoE   "TEST$testNumString: $dSensorpin LED Active"
-        echoE "  "
+      echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+      TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+      echoE "$dSensorPins Set State: $TEST_RESPONSE"
+    
+      if echo "$TEST_RESPONSE" | grep -q "sensorvalue=$expectedValue"; then
+        echoE " "
+        Yn=$(checkLED "$testNumString" "$dSensorpin")
+
+        if [[ "Y" == "$Yn" ]]; then
+          echoE "  "
+          echoE   "TEST$testNumString: $dSensorpin LED Active"
+          echoE "  "
+
+          echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
+          sleep 0.5
+          
+          echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+          TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+          echoE "$dSensorPins Reset Again State: $TEST_RESPONSE"
+          
+          if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
+            echoE " "
+          else
+            echoE "  "
+            drawError "TEST$testNumString: $dSensorpin Not Reset" "$dSensorpin Not Reset"
+            logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Test: Not Reset"
+            exit
+          fi
+        else
+          echoE "  "
+          drawError "TEST$testNumString: $dSensorpin LED Active Check" "LED Not Lit"
+          logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin LED Active Check: LED Not Lit"
+          exit
+        fi
       else
-        heatersOff
         echoE "  "
-        drawError "TEST$testNumString: $dSensorpin LED Active Check" "LED Not Lit"
-        logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin LED Active Check: LED Not Lit"
+        drawError "TEST$testNumString: $dSensorpin Set Check" "$dSensorpin NOT Set"
+        logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Set Check: $dSensorpin NOT Set"
         exit
       fi
     else
-      heatersOff
-      drawError "TEST$testNumString: $dSensorpin Not Active"
-      logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Not Active"
-      heatersOff
+      drawError "TEST$testNumString: $dSensorpin Unexpected Active"
+      logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Unexpected Active"
       exit
     fi
 
-    expectedPin=$((expectedPin * 2))
+    expectedPin=$((expectedPin + 1))
+    expectedValue=$((expectedValue * 2))
   
     echo -ne "SET_PIN PIN=$dSensorpin VALUE=0\n" > "$TTY" || true
   done
@@ -1132,7 +1146,6 @@ if [[ 0 != $doFanCheck ]]; then
       echoE   "TEST$testNUM: $fanpin Driver Active"
       echoE "  "
     else
-      heatersOff
       echoE "  "
       drawError "TEST$testNUM: $fanpin Operation Check" "LED/Strip LED Not Lit"
       logFileImage="$logFileImage\nTEST$testNUM: $fanpin LED Operation Check: LED/Strip LED Not Lit"
@@ -1154,18 +1167,12 @@ fi
 
 
 ########################################################################
-## Turn Heaters off to ensure they're not left on
+## Tests Complete
 ########################################################################
 
-heatersOff
 
-########################################################################
-## Tests Complete: Conditional Execution from Here to Avoid Problems
-########################################################################
 sealingFlag=0
-
 if [[ 1 -eq $sealingFlag ]]; then
-
 ########################################################################
 ## Tests Complete: Software Sealing
 ########################################################################
