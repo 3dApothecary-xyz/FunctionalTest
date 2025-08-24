@@ -30,6 +30,8 @@ ftVersion() {
              # Removed "heatersoff" method
              # Updated "dsensor#" tests for NewHat3a demux wiring (with matching updates in printer.cfg)
              # Added Inductive Sensor Test
+             # Added BLTouch Test
+             # Added SPI OR Gate Test
   echo "$ver"
 }
 
@@ -69,6 +71,7 @@ ftVersion() {
 #  "n[ext]" skips over methods
 #  "c[ontinue]" executes to next breakpoint or end
 #  "info break" lists active breakpoints
+#  "print $VariableName" Displays variable's contents
 
 # Some Syntax checking options:
 # "bash -n ./ft.sh" to check for Logic errors
@@ -550,6 +553,8 @@ logFileName="LOG$logsNumber-$currentDateTime.log"
 clearScreen
 drawSplashScreen
 
+doLEDCheck=0
+
 testNum=0
 
 
@@ -683,7 +688,6 @@ sleep 1
 python ~/python/enableKatapult.py
 
 
-doLEDCheck=0
 if [[ 0 != $doLEDCheck ]]; then
 ########################################################################
 # Check Power LED Lit
@@ -924,6 +928,31 @@ else
   exit
 fi
 
+
+########################################################################
+# sensorvalue Initial State Check
+########################################################################
+testNum=$((testNum + 1))
+testNumString=$(makeTestNUMString "$testNum")
+
+echo -e  "$outline$PHULLSTRING"
+doAppend "!TEST$testNumString: sensorvalue Initial State Check"
+logFileImage="$logFileImage\nTEST$testNumString: Verify sensorvalue Initial State is 0"
+
+echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+echoE "sensorvalue Initial State: $TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
+  echoE "  "
+else
+  drawError "TEST$testNumString: sensorvalue Initial State Check" "sensorvalue NOT 0"
+  logFileImage="$logFileImage\nTEST$testNumString: sensorvalue Initial State NOT 0"
+  exit
+fi
+
+
+
 ########################################################################
 # MCU Temperature
 ########################################################################
@@ -1083,66 +1112,51 @@ if [[ 0 != $doDSensorCheck ]]; then
     doAppend "!TEST$testNumString: Check $dSensorpin Operation"
     logFileImage="$logFileImage\nTEST$testNumString: Check $dSensorpin Operation"
 
+    echo -ne "SETDEMUX VALUE=$expectedPin\n" > "$TTY" || true
+    sleep 0.5
     echo -ne "GETSENSORVALUE\n" > "$TTY" || true
     TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-    echoE "$dSensorPin Reset State: $TEST_RESPONSE"
-
-    if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
-      echoE " "
-
-      echo -ne "SETDEMUX VALUE=$expectedPin\n" > "$TTY" || true
-      sleep 0.5
-
-      echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-      TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-      echoE "$dSensorPin Set State: $TEST_RESPONSE"
+    echoE "$dSensorPin Set State: $TEST_RESPONSE"
     
-      if echo "$TEST_RESPONSE" | grep -q "sensorvalue=$expectedValue"; then
-        if [[ 0 != $doLEDCheck ]]; then
+    if echo "$TEST_RESPONSE" | grep -q "sensorvalue=$expectedValue"; then
+      if [[ 0 != $doLEDCheck ]]; then
+        echoE " "
+        Yn=$(checkLED "$testNumString" "$dSensorpin")
+      else
+        Yn="Y"
+      fi
+
+      if [[ "Y" == "$Yn" ]]; then
+        echoE "  "
+        echoE   "TEST$testNumString: $dSensorpin LED Active"
+        echoE "  "
+
+        echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
+        sleep 0.5
+        echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+        TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+        echoE "$dSensorPin Reset State: $TEST_RESPONSE"
+          
+        if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
           echoE " "
-          Yn=$(checkLED "$testNumString" "$dSensorpin")
-        else
-          Yn="Y"
-        fi
-
-        if [[ "Y" == "$Yn" ]]; then
-          echoE "  "
-          echoE   "TEST$testNumString: $dSensorpin LED Active"
-          echoE "  "
-
-          echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
-          sleep 0.5
-          
-          echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-          TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-          echoE "$dSensorPins Reset Again State: $TEST_RESPONSE"
-          
-          if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
-            echoE " "
-          else
-            echoE "  "
-            drawError "TEST$testNumString: $dSensorpin Not Reset" "$dSensorpin Not Reset"
-            logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Test: Not Reset"
-            exit
-          fi
         else
           echoE "  "
-          echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
-          drawError "TEST$testNumString: $dSensorpin LED Active Check" "LED Not Lit"
-          logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin LED Active Check: LED Not Lit"
+          drawError "TEST$testNumString: $dSensorpin Not Reset" "$dSensorpin Not Reset"
+          logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Test: Not Reset"
           exit
         fi
       else
         echoE "  "
         echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
-        drawError "TEST$testNumString: $dSensorpin Set Check" "$dSensorpin NOT Set"
-        logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Set Check: $dSensorpin NOT Set"
+        drawError "TEST$testNumString: $dSensorpin LED Active Check" "LED Not Lit"
+        logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin LED Active Check: LED Not Lit"
         exit
       fi
     else
+      echoE "  "
       echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
-      drawError "TEST$testNumString: $dSensorpin Unexpected Active"
-      logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Unexpected Active"
+      drawError "TEST$testNumString: $dSensorpin Set Check" "$dSensorpin NOT Set"
+      logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Set Check: $dSensorpin NOT Set"
       exit
     fi
 
@@ -1166,66 +1180,202 @@ if [[ 0 != $doIndStopCheck ]]; then
   doAppend "!TEST$testNumString: Check Inductive Sensor Operation"
   logFileImage="$logFileImage\nTEST$testNumString: Check Inductive Sensor Operation"
 
+  echo -ne "SETDEMUX VALUE=6\n" > "$TTY" || true
+  sleep 0.5
   echo -ne "GETSENSORVALUE\n" > "$TTY" || true
   TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-  echoE "Inductive Sensor Reset State: $TEST_RESPONSE"
-
-  if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
-    echoE " "
-
-    echo -ne "SETDEMUX VALUE=6\n" > "$TTY" || true
-    sleep 0.5
-
-    echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-    TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-    echoE "Inductive Sensor Set State: $TEST_RESPONSE"
+  echoE "Inductive Sensor Set State: $TEST_RESPONSE"
     
-    if echo "$TEST_RESPONSE" | grep -q "sensorvalue=32"; then
-      if [[ 0 != $doLEDCheck ]]; then
+  if echo "$TEST_RESPONSE" | grep -q "sensorvalue=32"; then
+    if [[ 0 != $doLEDCheck ]]; then
+      echoE " "
+      Yn=$(checkLED "$testNumString" "Inductive")
+    else
+      Yn="Y"
+    fi
+
+    if [[ "Y" == "$Yn" ]]; then
+      echoE "  "
+      echoE   "TEST$testNumString: Inductive Sensor LED Active"
+      echoE "  "
+      echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
+      sleep 0.5
+          
+      echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+      TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+      echoE "Inductive Sensor Reset State: $TEST_RESPONSE"
+          
+      if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
         echoE " "
-        Yn=$(checkLED "$testNumString" "Inductive")
-      else
-        Yn="Y"
-      fi
-
-      if [[ "Y" == "$Yn" ]]; then
-        echoE "  "
-        echoE   "TEST$testNumString: Inductive Sensor LED Active"
-        echoE "  "
-
-        echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
-        sleep 0.5
-          
-        echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-        TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-        echoE "Inductive Sensor Reset Again State: $TEST_RESPONSE"
-          
-        if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
-          echoE " "
-        else
-          echoE "  "
-          drawError "TEST$testNumString: Inductive Sensor Not Reset" "Inductive Sensor Not Reset"
-          logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor Test: Not Reset"
-          exit
-        fi
       else
         echoE "  "
-        echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
-        drawError "TEST$testNumString: Inductive Sensor LED Active Check" "LED Not Lit"
-        logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor LED Active Check: LED Not Lit"
+        drawError "TEST$testNumString: Inductive Sensor Not Reset" "Inductive Sensor Not Reset"
+        logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor Test: Not Reset"
         exit
       fi
     else
       echoE "  "
       echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
-      drawError "TEST$testNumString: Inductive Sensor Set Check" "Inductive Sensor NOT Set"
-      logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor Set Check: Inductive Sensor NOT Set"
+      drawError "TEST$testNumString: Inductive Sensor LED Active Check" "LED Not Lit"
+      logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor LED Active Check: LED Not Lit"
       exit
     fi
   else
+    echoE "  "
     echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
-    drawError "TEST$testNumString: Inductive Sensor Unexpected Active"
-    logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor Unexpected Active"
+    drawError "TEST$testNumString: Inductive Sensor Set Check" "Inductive Sensor NOT Set"
+    logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor Set Check: Inductive Sensor NOT Set"
+    exit
+  fi
+########################################################################
+fi
+
+
+doBLTouchCheck=1
+if [[ 0 != $doBLTouchCheck ]]; then
+########################################################################
+# Check the BLTouch Servo
+########################################################################
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
+
+  echo -e  "$outline$PHULLSTRING"
+  doAppend "!TEST$testNumString: Check BLTouch Servo Operation"
+  logFileImage="$logFileImage\nTEST$testNumString: Check BLTouch Servo Operation"
+
+  echo -ne "SETBLSERVO VALUE=1\n" > "$TTY" || true
+  sleep 0.5
+  echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+  echoE "BLTouch Servo Set State: $TEST_RESPONSE"
+    
+  if echo "$TEST_RESPONSE" | grep -q "sensorvalue=512"; then
+    echo -ne "SETBLSERVO VALUE=0\n" > "$TTY" || true
+    sleep 0.5
+    echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+    TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+    echoE "BLTouch Servo Reset State: $TEST_RESPONSE"
+          
+    if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
+      echoE " "
+    else
+      echoE "  "
+      drawError "TEST$testNumString: BLTouch Servo Not Reset" "BLTouch Servo Not Reset"
+      logFileImage="$logFileImage\nTEST$testNumString: BLTouch Servo Test: Not Reset"
+      exit
+    fi
+  else
+    echoE "  "
+    echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
+    drawError "TEST$testNumString: Inductive Sensor Set Check" "Inductive Sensor NOT Set"
+    logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor Set Check: Inductive Sensor NOT Set"
+    exit
+  fi
+########################################################################
+# Check the BLTouch Probe
+########################################################################
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
+
+  echo -e  "$outline$PHULLSTRING"
+  doAppend "!TEST$testNumString: Check BLTouch Probe Operation"
+  logFileImage="$logFileImage\nTEST$testNumString: Check BLTouch Probe Operation"
+
+  echo -ne "SETBLPROBE VALUE=1\n" > "$TTY" || true
+  sleep 0.5
+  echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+  echoE "BLTouch Probe Set State: $TEST_RESPONSE"
+    
+  if echo "$TEST_RESPONSE" | grep -q "sensorvalue=256"; then
+    if [[ 0 != $doLEDCheck ]]; then
+      echoE " "
+      Yn=$(checkLED "$testNumString" "BLTouch")
+    else
+      Yn="Y"
+    fi
+
+    if [[ "Y" == "$Yn" ]]; then
+      echoE "  "
+      echoE   "TEST$testNumString: BLTouch Probe LED Active"
+      echoE "  "
+
+      echo -ne "SETBLPROBE VALUE=0\n" > "$TTY" || true
+      sleep 0.5
+          
+      echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+      TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+      echoE "BLTouch Probe Reset State: $TEST_RESPONSE"
+          
+      if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
+        echoE " "
+      else
+        echoE "  "
+        drawError "TEST$testNumString: BLTouch Probe Not Reset" "BLTouch Probe Not Reset"
+        logFileImage="$logFileImage\nTEST$testNumString: BLTouch Probe Test: Not Reset"
+        exit
+      fi
+    else
+      echoE "  "
+      echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
+      drawError "TEST$testNumString: BLTouch Probe LED Active Check" "LED Not Lit"
+      logFileImage="$logFileImage\nTEST$testNumString: BLTouch Probe LED Active Check: LED Not Lit"
+      exit
+    fi
+  else
+    echoE "  "
+    echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
+    drawError "TEST$testNumString: BLTouch Probe Set Check" "BLTouch Probe NOT Set"
+    logFileImage="$logFileImage\nTEST$testNumString: BLTouch Probe Set Check: BLTouch Probe NOT Set"
+    exit
+  fi
+########################################################################
+fi
+
+
+doSPICheck=1
+if [[ 0 != $doSPICheck ]]; then
+########################################################################
+# Check the SPI CS/MOSI OR Gate
+########################################################################
+  testNum=$((testNum + 1))
+  testNumString=$(makeTestNUMString "$testNum")
+
+  echo -e  "$outline$PHULLSTRING"
+  doAppend "!TEST$testNumString: Check SPI CS/MOSI OR Gate Operation"
+  logFileImage="$logFileImage\nTEST$testNumString: Check SPI CS/MOSI OR Gate Operation"
+
+#  for (( i=3; i>=1; i-- )); do
+  for i in {3..1}; do
+    echo -ne "SETSPICSMOSI VALUE=$i\n" > "$TTY" || true
+    sleep 0.5
+    echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+    TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+    echoE "SPI CS/MOSI OR Gate Set $i: $TEST_RESPONSE"
+    
+    if echo "$TEST_RESPONSE" | grep -q "sensorvalue=1024"; then
+      echoE "  "
+    else
+      echoE "  "
+      echo -ne "SETSPICSMOSI VALUE=0\n" > "$TTY" || true
+      drawError "TEST$testNumString: SPI CS/MOSI OR Gate Set $i Check" "SPI CS/MOSI OR Gate NOT Set"
+      logFileImage="$logFileImage\nTEST$testNumString: SPI CS/MOSI OR Gate Set $i Check: SPI CS/MOSI OR Gate NOT Set"
+      exit
+    fi
+  done
+
+  echo -ne "SETSPICSMOSI VALUE=0\n" > "$TTY" || true
+  sleep 0.5
+  echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+  echoE "SPI CS/MOSI OR Gate Set 0: $TEST_RESPONSE"
+    
+  if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
+    echoE " "
+  else
+    echoE "  "
+    drawError "TEST$testNumString: SPI CS/MOSI OR Gate Not Reset" "SPI CS/MOSI OR Gate Not Reset"
+    logFileImage="$logFileImage\nTEST$testNumString: SPI CS/MOSI OR Gate Test: Not Reset"
     exit
   fi
 ########################################################################
