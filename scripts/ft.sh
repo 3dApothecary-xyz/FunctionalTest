@@ -32,12 +32,62 @@ ftVersion() {
              # Added Inductive Sensor Test
              # Added BLTouch Test
              # Added SPI OR Gate Test
+  ver="0.11" # Added "heater#" and "fan# tests
+             # Added rPi 40 Pin Header Pin Function Table
   echo "$ver"
 }
 
 # Written by: myke predko
 # mykepredko@3dapothecary.xyz
 # (C) Copyright 2025 for File Contents and Data Formatting
+
+# Raspberry Pi 40 Pin Header Pin Function Table
+#
+# -------------+-------------+-------------+-------------------------------------------------|
+# Function     | Pin Number  | GPIO Number | Comment                                         |
+# -------------+-------------+-------------+-------------------------------------------------|
+# | +3V3 Power |  1          | N/A         |                                                 |
+# | +5V Power  |  2          | N/A         |                                                 |
+neopixel0      =  3          # GPIO2       |                                                 |
+# | +5V Power  |  4          | N/A         |                                                 |
+neopixel1      =  5          # GPIO3       |                                                 |
+# | GND        |  6          | N/A         |                                                 |
+BOOT0          =  7          # GPIO4       |                                                 |
+# | UART0 TX   |  8          | N/A         |                                                 |
+# | GND        |  9          | N/A         |                                                 |
+# | UART0 RX   | 10          | N/A         |                                                 |
+RESET          = 11          # GPIO17      |                                                 |
+blprobe        = 12          # GPIO18      |                                                 |
+spicsmosi      = 13          # GPIO27      |                                                 |
+# | GND        | 14          | N/A         |                                                 |
+blservo        = 15          # GPIO22      |                                                 |
+htr1complo     = 16          # GPIO23      |                                                 |
+# | +3V3 Power | 17          | N/A         |                                                 |
+htr1comphi     = 18          # GPIO24      |                                                 |
+fan1comphi     = 19          # GPIO19      |                                                 |
+# | GND        | 20          | N/A         |                                                 |
+DEMUX_C        = 21          # GPIO9       |                                                 |
+fan0complo     = 22          # GPIO25      | VIN to HeaterBoard Provided using this pin      |
+DEMUX_B        = 23          # GPIO11      |                                                 |
+htr0complo     = 24          # GPIO8       |                                                 |
+# | GND        | 25          | N/A         |                                                 |
+DEMUX_A        = 26          # GPIO7       |                                                 |
+# | RESERVED   | 27          | N/A         |                                                 |
+# | RESERVED   | 28          | N/A         |                                                 |
+fan2comphi     = 29          # GPIO5       |                                                 |
+# | GND        | 30          | N/A         |                                                 |
+fan3complo     = 31          # GPIO6       |                                                 |
+fan3comphi     = 32          # GPOI012     |                                                 |
+htr0comphi     = 33          # GPIO19      |                                                 |
+# | GND        | 34          | N/A         |                                                 |
+fan1complo     = 35          # GPIO19      |                                                 |
+fan2complo     = 36          # GPIO16      |                                                 |
+ssrcomphi      = 37          # GPIO26      |                                                 |
+ssrcomplo      = 38          # GPIO20      |                                                 |
+# | GND        | 39          | N/A         |                                                 |
+fan1comphi     = 40          # GPIO21      |                                                 |
+# -------------+-------------+-------------+-------------------------------------------------|
+
 
 # NOTE for logic debugging use the Bash Debugger running on a CB2 Host
 
