@@ -1490,7 +1490,7 @@ fi
 
 
 
-if [[ 0 != $doFanCheck ]] && [[ 0 != doHeaterCheck ]]; then
+if [[ 0 != $doFanCheck ]] && [[ 0 != $doHeaterCheck ]]; then
 ########################################################################
 # Loop Through Check FAN# Operation
 ########################################################################
