@@ -1,7 +1,7 @@
 #!/bin/bash
-
 # Script to simplify Functional Test Micro SD Card setup
 # Execute with "curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/ftload1.sh | bash"
+# 2025.08.27 - Updated to place ft.sh in the home folder/not in a "scripts" folder
 sudo apt-get install git -y
 sudo apt install python3 python3-serial -y
 mkdir python
@@ -14,11 +14,11 @@ wget -O gpioread.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main
 wget -O toggleBOOT0.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/toggleBOOT0.py?raw=true
 chmod 777 *.py
 cd ~
-mkdir scripts
-cd scripts
+#mkdir scripts
+#cd scripts
 wget -O ft.sh https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/scripts/ft.sh?raw=true
 chmod 777 *.sh
-cd ~
+#cd ~
 mkdir logs
 mkdir bin
 cd bin
