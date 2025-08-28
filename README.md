@@ -348,7 +348,7 @@
 40. Start Klipper Process in CM4
     * `sudo service klipper stop`
     * `make flash`
-    * `sudo service klipper start`
+    * Remove?  Klipper Not Needed Until Step 56.  `sudo service klipper start`
 
 ### Make Firmware Images
 
@@ -372,7 +372,7 @@
 
 ### Flash MCU on KGP 4x2209
 
-44. Stop Klipper while Flashing the KGP 4x2209 using `sudo service klipper stop`
+44. Remove?  Klipper Stopped Previously and not needed until Step 56.  Stop Klipper while Flashing the KGP 4x2209 using `sudo service klipper stop`
     
 45. `lsusb` and check to see that there is a device with "ID" `0483:df11` (the Orange LED above the `RESET` button is lit when the KGP 4x2209 is in DFU Mode):
 
