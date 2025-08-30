@@ -458,7 +458,7 @@ install_script: install.sh
         * `sudo service klipper restart`
         * `cd ~`
    
-62. Check to see that Klipper has restated properly in Mainsail
+62. Check to see that Klipper has restarted properly in Mainsail
 
 63. Check to see that there is a `.dynamicmacros.cfg` file in `~/printer_data/config` using the command `ls ~/printer_data/config -al`
 
