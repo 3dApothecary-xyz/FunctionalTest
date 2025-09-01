@@ -36,6 +36,7 @@ ftVersion() {
              # Added rPi 40 Pin Header Pin Function Table for use in heater#/fan# tests
              # Moved all the test enable variables to start of script to make test customization simpler
              # Discovered that variables in methods aren't local, changed all "i" variables to reflect execution location
+  ver="0.12" # Added Stepper Test
 # NOTE: If Test Error - Logfile is not saved.             
   echo "$ver"
 }
@@ -46,14 +47,15 @@ ftVersion() {
 
 # Test Enable Variables 
 doLEDCheck=0                        # Setting to Zero Disables the Manual LED Check
-doToolheadTemperatureCheck=1
-doThermoTemperatureCheck=1
-doDSensorCheck=1
-doIndStopCheck=1
-doBLTouchCheck=1
-doSPICheck=1
-doHeaterCheck=1                     # Setting to Zero Also Disables the VIN Check & Fan Check
-doFanCheck=1
+doToolheadTemperatureCheck=0
+doThermoTemperatureCheck=0
+doDSensorCheck=0
+doIndStopCheck=0
+doBLTouchCheck=0
+doSPICheck=0
+doHeaterCheck=0                     # Setting to Zero Also Disables the VIN Check & Fan Check
+doFanCheck=0
+doStepperCheck=1
 sealingFlag=0
 
 
@@ -1489,7 +1491,6 @@ if [[ 0 != $doHeaterCheck ]]; then
 fi
 
 
-
 if [[ 0 != $doFanCheck ]] && [[ 0 != $doHeaterCheck ]]; then
 ########################################################################
 # Loop Through Check FAN# Operation
@@ -1589,6 +1590,44 @@ if [[ 0 != $doFanCheck ]] && [[ 0 != $doHeaterCheck ]]; then
       exit
     fi    
   done  
+########################################################################
+fi
+
+
+if [[ 0 != $doStepperCheck ]]; then
+########################################################################
+# Loop Through stepper# Check Operation
+########################################################################
+  for stepper in {0..3}; do
+    testNum=$((testNum + 1))
+    testNumString=$(makeTestNUMString "$testNum")
+
+    echo -e  "$outline$PHULLSTRING"
+    doAppend "!TEST$testNumString: Test Stepper$stepper Driver Operation"
+    logFileImage="$logFileImage\nTEST$testNumString: Test Stepper$stepper Driver Operation"
+
+    echoE " "
+    echo -ne "MANUAL_STEPPER ENABLE=1 STEPPER=stepper_$stepper\n" > "$TTY" || true  
+    sleep 0.3
+    echo -ne "MANUAL_STEPPER MOVE=40 STOP_ON_ENDSTOP=1 STEPPER=stepper_$stepper\n" > "$TTY" || true  
+    sleep 1.5
+
+    echo -ne "read_tmc_field field=sg_result stepper=\"manual_stepper stepper_$stepper\"\n" > "$TTY" || true
+    INIT_SG_RESULT==$(timeout 1 cat "$TTY") || true
+    echoE "Initial SR_RESULT for $stepper: $INIT_SG_RESULT"
+    
+    echo -ne "MANUAL_STEPPER MOVE=30 STEPPER=stepper_$stepper\n" > "$TTY" || true
+    sleep 0.7
+    echo -ne "read_tmc_field field=sg_result stepper=\"manual_stepper stepper_$stepper\"\n" > "$TTY" || true
+    FINAL_SG_RESULT==$(timeout 1 cat "$TTY") || true
+    echoE "Final SR_RESULT for $stepper: $FINAL_SG_RESULT"
+
+    echo -ne "MANUAL_STEPPER ENABLE=0 STEPPER=stepper_$stepper\n" > "$TTY" || true  
+    sleep 0.3
+    
+    
+
+  done
 ########################################################################
 fi
 
