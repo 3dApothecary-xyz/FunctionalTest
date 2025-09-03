@@ -674,7 +674,7 @@ install_script: install.sh
 
 ![Toolhead Controller Klipper Paramters](images/Toolhead_Klipper_Menuconfig.png)
 
-    * Save menuconfig paramters by entering `Q` and then `Y`
+76. Save menuconfig paramters by entering `Q` and then `Y` and then entering:
     ```
     make clean
     ```
@@ -682,38 +682,38 @@ install_script: install.sh
     make
     ```
 
-76. Enter
+77. Enter
     ```
     sudo service klipper stop
     ```
     
-77. Enter the following command which should return something like:
+78. Enter the following command which should return something like:
     ```
     python3 ~/katapult/scripts/flashtool.py -i can0 -q
     ```
 
 ![Toolhead Controller Katapult UUID](images/Toolhead_Controller_Klipper_Paramters.png)
 
-78. Flash the Toolhead Controller using
+79. Flash the Toolhead Controller using
     ```
     python3 ~/katapult/scripts/flashtool.py -i can0 -f ~/klipper/out/klipper.bin -u {UUID FOUND IN PREVIOUS STEP}
     ```
 
-79. Check for the CAN UUID using the following command which will return the Klipper CAN UUID:
+80. Check for the CAN UUID using the following command which will return the Klipper CAN UUID:
     ```
     python3 ~/katapult/scripts/flashtool.py -i can0 -q
     ```
 
 ![Toolhead Controller CAN UUID](images/Toolhead_Controller_CAN_UUID.png)
 
-80. Create the `toolhead.cfg` file using the command
+81. Create the `toolhead.cfg` file using the command
      ```
      printf "[mcu toolhead]\ncanbus_uuid: {UUID FOUND IN PREVIOUS STEP}\n" > ~/printer_data/config/toolhead.cfg
      ```
 
-81. Edit `printer.cfg` on the Mainsail webpage and Remove comments on the `[include toolhead.cfg]` and `[temperature_sensor toolhead_temp]` statements
+82. Edit `printer.cfg` on the Mainsail webpage and Remove comments on the `[include toolhead.cfg]` and `[temperature_sensor toolhead_temp]` statements
 
-82. Enter the following command and Klipper should start up as:
+83. Enter the following command and Klipper should start up as:
      ```
      sudo service klipper start
      ```
