@@ -37,7 +37,11 @@ ftVersion() {
              # Moved all the test enable variables to start of script to make test customization simpler
              # Discovered that variables in methods aren't local, changed all "i" variables to reflect execution location
   ver="0.12" # Added Stepper Test
-# NOTE: If Test Error - Logfile is not saved.             
+             # Added Flag to disable FirmwareLoad as part of Test Process
+             #  This is to speed up testing different test steps 
+             #  AND allow parameters set to be kept active during test
+             # Cleaned up drawError Method Operation/Added Error to Log/Saved Log/Exit script
+             # Removed any "Notes" for the test
   echo "$ver"
 }
 
@@ -47,16 +51,17 @@ ftVersion() {
 
 # Test Enable Variables 
 doLEDCheck=0                        # Setting to Zero Disables the Manual LED Check
-doToolheadTemperatureCheck=0
-doThermoTemperatureCheck=0
-doDSensorCheck=0
-doIndStopCheck=0
-doBLTouchCheck=0
-doSPICheck=0
-doHeaterCheck=0                     # Setting to Zero Also Disables the VIN Check & Fan Check
-doFanCheck=0
+doFirmwareLoad=1
+doToolheadTemperatureCheck=1
+doThermoTemperatureCheck=1
+doDSensorCheck=1
+doIndStopCheck=1
+doBLTouchCheck=1
+doSPICheck=1
+doHeaterCheck=1                     # Setting to Zero Also Disables the VIN Check & Fan Check
+doFanCheck=1
 doStepperCheck=1
-sealingFlag=0
+sealingFlag=1
 
 
 # Raspberry Pi 40 Pin Header Pin Function Table
@@ -269,7 +274,6 @@ headerName="$1"
   echo -e "$PHULLSTRING$BASE"
 }
 doAppend() {
-#$# $1 strings to display/execute
 
   for argument in "$@"; do
     appendString=$argument
@@ -340,6 +344,8 @@ drawError() {
 errorHeaderMessage="$1"
 errorString="$2"
 
+  logFileImage="$logFileImage\n$errorHeaderMessage-$errorString"
+
   drawHeader "$errorHeaderMessage"
   echo -e "$outline##                                                                      ##
 ##  EEEEEEEEEEE   RRRRRRRR      RRRRRRRR         OOOOO      RRRRRRRR    ##
@@ -389,6 +395,10 @@ $PHULLSTRING"
   done
 
   echo -e "$PHULLSTRING$BASE"
+
+  echo -e "$logFileImage" > ~/logs/$logFileName
+  
+  exit
 }
 checkLED() {
 
@@ -605,7 +615,9 @@ echo "$response"
 # Mainline Code Start/Setup Log File Name
 ########################################################################
 
-sudo service klipper stop
+if [[ 0 != $doFirmwareLoad ]]; then
+  sudo service klipper stop
+fi
 
 currentDateTime=$(date -u "+%F-%H-%M-%S")
 
@@ -643,8 +655,6 @@ if echo "$pingRESPONSE" | grep -q "klipper.hosted"; then
 else
   echoE " "
   drawError "TEST$testNumString: Ping" "No Response"
-  logFileImage="$logFileImage\nTEST$testNumString: Ping No Response"
-  exit
 fi
 
 if [[ 0 != $doHeaterCheck ]]; then
@@ -666,95 +676,92 @@ if [[ 0 != $doHeaterCheck ]]; then
   else
     echoE " "
     drawError "TEST$testNumString: VIN Connection" "No VIN Detected on HeaterBoard"
-    logFileImage="$logFileImage\nTEST$testNumString: No VIN Detected on HeaterBoard"
-    exit
   fi
 ########################################################################
 fi
 
 
+if [[ 0 != $doFirmwareLoad ]]; then
 ########################################################################
 # Firmware Load Start
 ########################################################################
 
-echoE " "
-echo -e  "$outline$PHULLSTRING"
-doAppend "!Firmware Load"
-logFileImage="Firmware Load"
-
-lsusbResponse=$(lsusb)
-
-echoE " "
-echoE "FLS:01"
-echoE "$lsusbResponse"
-echoE " "
-
-if echo "$lsusbResponse" | grep -q "0483:df11"; then
-  loadKatapult=1
-else
-  python ~/python/enableKatapult.py
-  
-  sleep 1
-  
-  katapultResponse=$(ls /dev/serial/by-id) || true
-
-  echoE "FLS:02"
-  echoE "$katapultResponse"
   echoE " "
+  echo -e  "$outline$PHULLSTRING"
+  doAppend "!Firmware Load"
+  logFileImage="Firmware Load"
 
-  if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
-    loadKatapult=0
-  else
-    python ~/python/enableDFU.py
-  
-    sleep 1
-        
-    lsusbResponse=$(lsusb) || true
-
-    echoE "FLS:03"
-    echoE "$lsusbResponse"
-    echoE " "
-
-    if echo "$lsusbResponse" | grep -q "0483:df11"; then
-      loadKatapult=1
-    else
-      drawError "Loading Firmware" "Unable to Activate DFU Mode or Katapult"
-      logFileImage="$logFileImage\nUnable to Activate DFU Mode or Katapult"
-      exit
-    fi
-  fi
-fi
-
-if [ 0 -ne $loadKatapult ]; then  
-  sudo dfu-util -a 0 -D ~/bin/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11 || true
-
-  sleep 1
-    
-  python ~/python/enableKatapult.py
-  
-  sleep 1
-  
-  katapultResponse=$(ls /dev/serial/by-id) || true
+  lsusbResponse=$(lsusb)
 
   echoE " "
-  echoE "FLS:04"
-  echoE "$katapultResponse"
+  echoE "FLS:01"
+  echoE "$lsusbResponse"
   echoE " "
 
-  if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
+  if echo "$lsusbResponse" | grep -q "0483:df11"; then
     loadKatapult=1
   else
-    drawError "Loading Firmware" "Error with Katapult Loading"
-    logFileImage="$logFileImage\nError with Katapult Loading"
-    exit
+    python ~/python/enableKatapult.py
+  
+    sleep 1
+  
+    katapultResponse=$(ls /dev/serial/by-id) || true
+
+    echoE "FLS:02"
+    echoE "$katapultResponse"
+    echoE " "
+
+    if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
+      loadKatapult=0
+    else
+      python ~/python/enableDFU.py
+  
+      sleep 1
+        
+      lsusbResponse=$(lsusb) || true
+
+      echoE "FLS:03"
+      echoE "$lsusbResponse"
+      echoE " "
+
+      if echo "$lsusbResponse" | grep -q "0483:df11"; then
+        loadKatapult=1
+      else
+        drawError "Loading Firmware" "Unable to Activate DFU Mode or Katapult"
+      fi
+    fi
   fi
-fi
 
-python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/serial/by-id/$katapultResponse
+  if [ 0 -ne $loadKatapult ]; then  
+    sudo dfu-util -a 0 -D ~/bin/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11 || true
 
-sleep 1
+    sleep 1
     
-python ~/python/enableKatapult.py
+    python ~/python/enableKatapult.py
+  
+    sleep 1
+  
+    katapultResponse=$(ls /dev/serial/by-id) || true
+
+    echoE " "
+    echoE "FLS:04"
+    echoE "$katapultResponse"
+    echoE " "
+
+    if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
+      loadKatapult=1
+    else
+      drawError "Loading Firmware" "Error with Katapult Loading"
+    fi
+  fi
+
+  python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/serial/by-id/$katapultResponse
+
+  sleep 1
+    
+  python ~/python/enableKatapult.py
+########################################################################
+fi
 
 
 if [[ 0 != $doLEDCheck ]]; then
@@ -774,8 +781,6 @@ if [[ 0 != $doLEDCheck ]]; then
   else
     echoE " "
     drawError "TEST$testNumString: Power LED Active Check" "LED Not Lit"
-    logFileImage="$logFileImage\nTEST$testNumString: Power LED Active Check: LED Not Lit"
-    exit
   fi
 
 ########################################################################
@@ -794,8 +799,6 @@ if [[ 0 != $doLEDCheck ]]; then
   else
     echoE " "
     drawError "TEST$testNumString: DFU LED Active Check" "LED Not Lit/Flashing"
-    logFileImage="$logFileImage\nTEST$testNumString: DFU LED Active Check: LED Not Lit/Flashing"
-    exit
   fi
 
 ########################################################################
@@ -814,8 +817,6 @@ if [[ 0 != $doLEDCheck ]]; then
   else
     echoE " "
     drawError "TEST$testNumString: STATUS LED Operation Check" "LED Not Lighting when BOOT0 Button Pressed"
-    logFileImage="$logFileImage\nTEST$testNumString: STATUS LED Operation Check: LED Not Lighting when BOOT0 Button Pressed"
-    exit
   fi
 ########################################################################
 else
@@ -823,145 +824,147 @@ else
 fi
 
   
-dfuResponse=$(ls /dev/serial/by-id)
+if [[ 0 != $doFirmwareLoad ]]; then
+########################################################################
+# If Katapult is Active, Load Klipper & Setup mcu.cfg 
+########################################################################
+  dfuResponse=$(ls /dev/serial/by-id)
 
-echoE " "
-echoE "FLS:05"
-echoE "$dfuResponse"
-echoE " "
+  echoE " "
+  echoE "FLS:05"
+  echoE "$dfuResponse"
+  echoE " "
 
-if echo "$dfuResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
-  loadKatapult=1
-else
-  drawError "Loading Firmware" "Unable to Restart Katapult after KGP_4x2209_DFU.bin Load"
-  logFileImage="$logFileImage\nUnable to Restart Katapult after KGP_4x2209_DFU.bin Load"
-  exit
-fi
-
-python3 ~/katapult/scripts/flashtool.py -f ~/bin/klipper.bin -d /dev/serial/by-id/$katapultResponse
-
-sleep 1
-
-configFolder=$(ls ~/printer_data/config)
-
-echoE " "
-echoE "FLS:06"
-echoE "$configFolder"
-echoE " "
-
-if echo "$configFolder" | grep -q "mcu.cfg"; then
-  rm ~/printer_data/config/mcu.cfg
-fi
-
-canUUID=$(~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0)
-
-echoE "FLS:07"
-echoE "$canUUID"
-echoE " "
-
-mapfile -t canUUIDArray <<< "$canUUID"
-
-toolheadCfgUUID=$(<~/printer_data/config/toolhead.cfg)
-
-mapfile -t toolheadCfgUUIDArray <<< "$toolheadCfgUUID"
-toolheadUUID="${toolheadCfgUUIDArray[1]}"
-
-toolheadUUID="${toolheadUUID#canbus_uuid: }"
-toolheadUUID="${toolheadUUID%:0:12}"
-
-echoE "FLS:08"
-echoE "$toolheadUUID"
-echoE " "
-
-mcuUUID=""
-fls=1
-for arrayElement in "${canUUIDArray[@]}"; do
-  if echo "$arrayElement" | grep "Found canbus_uuid="; then
-    arrayElement="${arrayElement#Found canbus_uuid=}"  
-    arrayElement="${arrayElement:0:12}"
-
-    echoE "FLS:09-$fls"
-    fls=$((fls+1))
-    echoE "$arrayElement"
-    echoE " "
-    
-    if [[ "$arrayElement" == "$toolheadUUID" ]]; then
-      echoE "Match to Toolhead UUID"
-    else
-      mcuUUID="$arrayElement"
-    fi
+  if echo "$dfuResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
+    loadKatapult=1
+  else
+    drawError "Loading Firmware" "Unable to Restart Katapult after KGP_4x2209_DFU.bin Load"
   fi
-done
 
-echoE "FLS:10"
-echoE "$mcuUUID"
-echoE " "
+  python3 ~/katapult/scripts/flashtool.py -f ~/bin/klipper.bin -d /dev/serial/by-id/$katapultResponse
 
-printf "[mcu]\ncanbus_uuid: $mcuUUID\n" > ~/printer_data/config/mcu.cfg
+  sleep 1
+
+  configFolder=$(ls ~/printer_data/config)
+
+  echoE " "
+  echoE "FLS:06"
+  echoE "$configFolder"
+  echoE " "
+
+  if echo "$configFolder" | grep -q "mcu.cfg"; then
+    rm ~/printer_data/config/mcu.cfg
+  fi
+
+  canUUID=$(~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0)
+
+  echoE "FLS:07"
+  echoE "$canUUID"
+  echoE " "
+
+  mapfile -t canUUIDArray <<< "$canUUID"
+
+  toolheadCfgUUID=$(<~/printer_data/config/toolhead.cfg)
+
+  mapfile -t toolheadCfgUUIDArray <<< "$toolheadCfgUUID"
+  toolheadUUID="${toolheadCfgUUIDArray[1]}"
+
+  toolheadUUID="${toolheadUUID#canbus_uuid: }"
+  toolheadUUID="${toolheadUUID%:0:12}"
+
+  echoE "FLS:08"
+  echoE "$toolheadUUID"
+  echoE " "
+
+  mcuUUID=""
+  fls=1
+  for arrayElement in "${canUUIDArray[@]}"; do
+    if echo "$arrayElement" | grep "Found canbus_uuid="; then
+      arrayElement="${arrayElement#Found canbus_uuid=}"  
+      arrayElement="${arrayElement:0:12}"
+
+      echoE "FLS:09-$fls"
+      fls=$((fls+1))
+      echoE "$arrayElement"
+      echoE " "
+    
+      if [[ "$arrayElement" == "$toolheadUUID" ]]; then
+        echoE "Match to Toolhead UUID"
+      else
+        mcuUUID="$arrayElement"
+      fi
+    fi
+  done
+
+  echoE "FLS:10"
+  echoE "$mcuUUID"
+  echoE " "
+
+  printf "[mcu]\ncanbus_uuid: $mcuUUID\n" > ~/printer_data/config/mcu.cfg
+########################################################################
+fi
 
 
 
+if [[ 0 != $doFirmwareLoad ]]; then 
 ########################################################################
 # Verify Klipper is Running
 ########################################################################
+  echoE " "
+  echo -e  "$outline$PHULLSTRING"
+  doAppend "!Klipper Startup"
+  logFileImage="$logFileImage\nKlipper Startup"
 
-echoE " "
-echo -e  "$outline$PHULLSTRING"
-doAppend "!Klipper Startup"
-logFileImage="$logFileImage\nKlipper Startup"
+  klipperFlag=0
+  for ((vkr=1;10>=vkr;++vkr)); do
+    if [[ 0 == $klipperFlag ]]; then
+      sleep 2
 
-sudo service klipper start
+      echo -ne "STATUS\n" > "$TTY" 
+      RESPONSE=$(timeout 2 cat "$TTY") || true
 
-klipperFlag=0
-for ((vkr=1;10>=vkr;++vkr)); do
-  if [[ 0 == $klipperFlag ]]; then
-    sleep 2
+      if echo "$RESPONSE" | grep -q "Klipper state: Ready"; then
+        klipperFlag=1
 
-    echo -ne "STATUS\n" > "$TTY" 
-    RESPONSE=$(timeout 2 cat "$TTY") || true
+        echoE " "
+        echoE "VKR:$vkr"
+        echoE "STATUS RESPONSE=$RESPONSE"
+        echoE " "
+      else
+        if echo "$RESPONSE" | grep -q "Can not update MCU 'host' config as it is shutdown"; then
+          sleep 2
 
-    if echo "$RESPONSE" | grep -q "Klipper state: Ready"; then
-      klipperFlag=1
+          echo -ne "FIRMWARE_RESTART\n" > "$TTY" 
+          RESTART_RESPONSE=$(timeout 2 cat "$TTY") || true
 
-      echoE " "
-      echoE "VKR:$vkr"
-      echoE "STATUS RESPONSE=$RESPONSE"
-      echoE " "
-    else
-      if echo "$RESPONSE" | grep -q "Can not update MCU 'host' config as it is shutdown"; then
-        sleep 2
+          if echo "$RESTART_RESPONSE" | grep -q "Klipper state: Ready"; then
+            klipperFlag=1
 
-        echo -ne "FIRMWARE_RESTART\n" > "$TTY" 
-        RESTART_RESPONSE=$(timeout 2 cat "$TTY") || true
-
-        if echo "$RESTART_RESPONSE" | grep -q "Klipper state: Ready"; then
-          klipperFlag=1
-
-          echoE " "
-          echoE "VKR:$vkr"
-          echoE "FIRMWARE_RESTART RESPONSE=$RESTART_RESPONSE"
-          echoE " "
-        else
-          echoE " "
-          echoE "VKR:$vkr"
-          echoE "STATUS RESPONSE=$RESPONSE"
-          echoE " "
-          echoE "Sent FIRMWARE_RESTART"
-          echoE " "
+            echoE " "
+            echoE "VKR:$vkr"
+            echoE "FIRMWARE_RESTART RESPONSE=$RESTART_RESPONSE"
+            echoE " "
+          else
+            echoE " "
+            echoE "VKR:$vkr"
+            echoE "STATUS RESPONSE=$RESPONSE"
+            echoE " "
+            echoE "Sent FIRMWARE_RESTART"
+            echoE " "
+          fi
         fi
       fi
     fi
-  fi
-done
+  done
 
-if [[ 0 != $klipperFlag ]]; then
-  echoE "VKR:Complete"
-  echoE "Klipper Running"
-  echoE " "
-else 
-  drawError "VKR: Error.  Klipper Not Starting Up" "Contact Support"
-  logFileImage="$logFileImage\nVKR: Error.  Klipper Not Starting Up"
-  exit
+  if [[ 0 != $klipperFlag ]]; then
+    echoE "VKR:Complete"
+    echoE "Klipper Running"
+    echoE " "
+  else 
+    drawError "VKR: Error.  Klipper Not Starting Up" "Contact Support"
+  fi
+########################################################################
 fi
 
 
@@ -970,7 +973,6 @@ fi
 # Functional Tests Continue
 ########################################################################
 
-#sleep 2
 sleep 1
 
 ########################################################################
@@ -993,8 +995,6 @@ if echo "$TEST_RESPONSE" | grep -q "VINTest: PASS"; then
   echoE " "
 else
   drawError "TEST$testNumString: VINMON" "Invalid Voltage Read"
-  logFileImage="$logFileImage\nTEST$testNumString: VINMON Invalid Voltage Read"
-  exit
 fi
 
 
@@ -1016,8 +1016,6 @@ if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
   echoE " "
 else
   drawError "TEST$testNumString: sensorvalue Initial State Check" "sensorvalue NOT 0"
-  logFileImage="$logFileImage\nTEST$testNumString: sensorvalue Initial State NOT 0"
-  exit
 fi
 
 
@@ -1042,8 +1040,6 @@ if echo "$TEST_RESPONSE" | grep -q "MCUTest: PASS"; then
   echoE " "
 else
   drawError "TEST$testNumString: MCU Temperature Test" "Invalid MCU Temperature Value Read"
-  logFileImage="$logFileImage\nTEST$testNumString: Invalid MCU Temperature Value Read"
-  exit
 fi
 
 if [[ 0 != $doToolheadTemperatureCheck ]]; then
@@ -1067,8 +1063,6 @@ if [[ 0 != $doToolheadTemperatureCheck ]]; then
     echoE " "
   else
     drawError "TEST$testNumString: Toolhead Temperature Test" "Invalid Toolhead Temperature Value Read"
-    logFileImage="$logFileImage\nTEST$testNumString: Invalid Toolhead Temperature Value Read"
-    exit
   fi
 ########################################################################
 fi
@@ -1097,12 +1091,8 @@ if [[ 0 != $doThermoTemperatureCheck ]]; then
     else
       if echo "$TEST_RESPONSE" | grep -q "ThermTest: Check thermo$thermNum Connection to HeaterBoard"; then
         drawError "TEST$testNumString: THERMO$thermNum Temperature Test" "Check Thermistor THERMO$thermNum Connection to Board Under Test"
-        logFileImage="$logFileImage\nTEST$testNumString: Check Thermistor THERMO$thermNum Connection to Board Under Test"
-        exit
       else
         drawError "TEST$testNumString: THERMO$thermNum Temperature Test" "Invalid THERMO$thermNum Thermistor Temperature Value Read"
-        logFileImage="$logFileImage\nTEST$testNumString: Invalid THERMO$thermNum Thermistor Temperature Value Read"
-        exit
       fi
     fi
   done
@@ -1129,18 +1119,17 @@ if [[ 0 != $doDSensorCheck ]]; then
     sleep 0.5
     echo -ne "GETSENSORVALUE\n" > "$TTY" || true
     TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-    echoE "$dSensorPin Set State: $TEST_RESPONSE"
     
     if echo "$TEST_RESPONSE" | grep -q "sensorvalue=$expectedValue"; then
       if [[ 0 != $doLEDCheck ]]; then
         echoE " "
         Yn=$(checkLED "$testNumString" "$dSensorpin")
+        echoE " "
       else
         Yn="Y"
       fi
 
       if [[ "Y" == "$Yn" ]]; then
-        echoE " "
         echoE   "TEST$testNumString: $dSensorpin LED Active"
         echoE " "
 
@@ -1148,29 +1137,20 @@ if [[ 0 != $doDSensorCheck ]]; then
         sleep 0.5
         echo -ne "GETSENSORVALUE\n" > "$TTY" || true
         TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
-        echoE "$dSensorPin Reset State: $TEST_RESPONSE"
           
         if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
-          echoE " "
+          sleep 0.1
         else
-          echoE " "
           drawError "TEST$testNumString: $dSensorpin Not Reset" "$dSensorpin Not Reset"
-          logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Test: Not Reset"
-          exit
         fi
       else
-        echoE " "
         echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
         drawError "TEST$testNumString: $dSensorpin LED Active Check" "LED Not Lit"
-        logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin LED Active Check: LED Not Lit"
-        exit
       fi
     else
       echoE " "
       echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
       drawError "TEST$testNumString: $dSensorpin Set Check" "$dSensorpin NOT Set"
-      logFileImage="$logFileImage\nTEST$testNumString: $dSensorpin Set Check: $dSensorpin NOT Set"
-      exit
     fi
 
     expectedPin=$((expectedPin + 1))
@@ -1222,22 +1202,16 @@ if [[ 0 != $doIndStopCheck ]]; then
       else
         echoE " "
         drawError "TEST$testNumString: Inductive Sensor Not Reset" "Inductive Sensor Not Reset"
-        logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor Test: Not Reset"
-        exit
       fi
     else
       echoE " "
       echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
       drawError "TEST$testNumString: Inductive Sensor LED Active Check" "LED Not Lit"
-      logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor LED Active Check: LED Not Lit"
-      exit
     fi
   else
     echoE " "
     echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
     drawError "TEST$testNumString: Inductive Sensor Set Check" "Inductive Sensor NOT Set"
-    logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor Set Check: Inductive Sensor NOT Set"
-    exit
   fi
 ########################################################################
 fi
@@ -1272,15 +1246,11 @@ if [[ 0 != $doBLTouchCheck ]]; then
     else
       echoE " "
       drawError "TEST$testNumString: BLTouch Servo Not Reset" "BLTouch Servo Not Reset"
-      logFileImage="$logFileImage\nTEST$testNumString: BLTouch Servo Test: Not Reset"
-      exit
     fi
   else
     echoE " "
     echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
     drawError "TEST$testNumString: Inductive Sensor Set Check" "Inductive Sensor NOT Set"
-    logFileImage="$logFileImage\nTEST$testNumString: Inductive Sensor Set Check: Inductive Sensor NOT Set"
-    exit
   fi
 ########################################################################
 # Check the BLTouch Probe
@@ -1323,22 +1293,16 @@ if [[ 0 != $doBLTouchCheck ]]; then
       else
         echoE " "
         drawError "TEST$testNumString: BLTouch Probe Not Reset" "BLTouch Probe Not Reset"
-        logFileImage="$logFileImage\nTEST$testNumString: BLTouch Probe Test: Not Reset"
-        exit
       fi
     else
       echoE " "
       echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
       drawError "TEST$testNumString: BLTouch Probe LED Active Check" "LED Not Lit"
-      logFileImage="$logFileImage\nTEST$testNumString: BLTouch Probe LED Active Check: LED Not Lit"
-      exit
     fi
   else
     echoE " "
     echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
     drawError "TEST$testNumString: BLTouch Probe Set Check" "BLTouch Probe NOT Set"
-    logFileImage="$logFileImage\nTEST$testNumString: BLTouch Probe Set Check: BLTouch Probe NOT Set"
-    exit
   fi
 ########################################################################
 fi
@@ -1368,8 +1332,6 @@ if [[ 0 != $doSPICheck ]]; then
       echoE " "
       echo -ne "SETSPICSMOSI VALUE=0\n" > "$TTY" || true
       drawError "TEST$testNumString: SPI CS/MOSI OR Gate Set $spi Check" "SPI CS/MOSI OR Gate NOT Set"
-      logFileImage="$logFileImage\nTEST$testNumString: SPI CS/MOSI OR Gate Set $spi Check: SPI CS/MOSI OR Gate NOT Set"
-      exit
     fi
   done
 
@@ -1384,8 +1346,6 @@ if [[ 0 != $doSPICheck ]]; then
   else
     echoE " "
     drawError "TEST$testNumString: SPI CS/MOSI OR Gate Not Reset" "SPI CS/MOSI OR Gate Not Reset"
-    logFileImage="$logFileImage\nTEST$testNumString: SPI CS/MOSI OR Gate Test: Not Reset"
-    exit
   fi
 ########################################################################
 fi
@@ -1411,7 +1371,6 @@ if [[ 0 != $doHeaterCheck ]]; then
 
     if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
       if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
-        echoE " "
         echo -ne "SETHEATER NUMBER=$htr VALUE=1\n" > "$TTY" || true  
         sleep 0.5
         RESPONSE_LO=$(python ~/python/gpioread.py ${htrcomplo[$htr]}) || true
@@ -1420,6 +1379,7 @@ if [[ 0 != $doHeaterCheck ]]; then
         if [[ 0 != $doLEDCheck ]]; then
           echoE " "
           Yn=$(checkLED "$testNumString" "heater$htr")
+          echoE " "
         else
           Yn="Y"
         fi
@@ -1428,63 +1388,43 @@ if [[ 0 != $doHeaterCheck ]]; then
         sleep 0.5
 
         if [[ "Y" == "$Yn" ]]; then
-          echoE " "
           echoE "TEST$testNumString: Heater$htr Probe LED Active"
           echoE " "
 
           if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then
             if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
-              echoE " "
               RESPONSE_LO=$(python ~/python/gpioread.py ${htrcomplo[$htr]}) || true
               RESPONSE_HI=$(python ~/python/gpioread.py ${htrcomphi[$htr]}) || true
 
               if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
                 if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
-                  echoE " "
+                  sleep 0.1
                 else
-                  echoE " "
                   drawError "TEST$testNumString: Heater$htr High Comparator Reset Output Test" "Heater$htr High Comparator NOT in Correct Reset State"
-                  logFileImage="$logFileImage\nTEST$testNumString: Heater$htr High Comparator NOT in Correct Reset State"
-                  exit
                 fi    
               else
-                echoE " "
                 drawError "TEST$testNumString: Heater$htr Low Comparator Reset Output Test" "Heater$htr Low Comparator NOT in Correct Reset State"
-                logFileImage="$logFileImage\nTEST$testNumString: Heater$htr Low Comparator NOT in Correct Reset State"
-                exit
               fi    
 
             else
-              echoE " "
               drawError "TEST$testNumString: Heater$htr High Comparator Set Output Test" "Heater$htr High Comparator NOT in Correct Set State"
-              logFileImage="$logFileImage\nTEST$testNumString: Heater$htr High Comparator NOT in Correct Set State"
-              exit
             fi    
           else
-            echoE " "
             drawError "TEST$testNumString: Heater$htr Low Comparator Set Output Test" "Heater$htr Low Comparator NOT in Correct Set State"
-            logFileImage="$logFileImage\nTEST$testNumString: Heater$htr Low Comparator NOT in Correct Set State"
-            exit
           fi    
 
         else
           echoE " "
           drawError "TEST$testNumString: Heater$htr LED Active Check" "LED Not Lit"
-          logFileImage="$logFileImage\nTEST$testNumString: Heater$htr LED Active Check: LED Not Lit"
-          exit
         fi
 
       else
         echoE " "
         drawError "TEST$testNumString: Heater$htr High Comparator Initial Output Test" "Heater$htr High Comparator NOT in Correct Initial State"
-        logFileImage="$logFileImage\nTEST$testNumString: Heater$htr High Comparator NOT in Correct Initial State"
-        exit
       fi    
     else
       echoE " "
       drawError "TEST$testNumString: Heater$htr Low Comparator Initial Output Test" "Heater$htr Low Comparator NOT in Correct Initial State"
-      logFileImage="$logFileImage\nTEST$testNumString: Heater$htr Low Comparator NOT in Correct Initial State"
-      exit
     fi    
   done
 ########################################################################
@@ -1508,13 +1448,9 @@ if [[ 0 != $doFanCheck ]] && [[ 0 != $doHeaterCheck ]]; then
 
     RESPONSE_LO=$(python ~/python/gpioread.py ${fancomplo[$fan]}) || true
     RESPONSE_HI=$(python ~/python/gpioread.py ${fancomphi[$fan]}) || true
-    
-    echo -e "LO: fan=$fan,  pin=${fancomplo[$fan]},  RESPONSE_LO=$RESPONSE_LO"
-    echo -e "HI: fan=$fan,  pin=${fancomphi[$fan]},  RESPONSE_HI=$RESPONSE_HI"
 
     if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
       if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
-        echoE " "
         echo -ne "SETFAN NUMBER=$fan VALUE=1\n" > "$TTY" || true  
         sleep 0.5
         RESPONSE_LO=$(python ~/python/gpioread.py ${fancomplo[$fan]}) || true
@@ -1523,6 +1459,7 @@ if [[ 0 != $doFanCheck ]] && [[ 0 != $doHeaterCheck ]]; then
         if [[ 0 != $doLEDCheck ]]; then
           echoE " "
           Yn=$(checkLED "$testNumString" "fan$fan")
+          echoE " "
         else
           Yn="Y"
         fi
@@ -1531,63 +1468,43 @@ if [[ 0 != $doFanCheck ]] && [[ 0 != $doHeaterCheck ]]; then
         sleep 0.5
 
         if [[ "Y" == "$Yn" ]]; then
-          echoE " "
           echoE "TEST$testNumString: Fan$fan Probe LED Active"
           echoE " "
 
           if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then
             if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
-              echoE " "
               RESPONSE_LO=$(python ~/python/gpioread.py ${fancomplo[$fan]}) || true
               RESPONSE_HI=$(python ~/python/gpioread.py ${fancomphi[$fan]}) || true
 
               if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
                 if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
-                  echoE " "
+                  sleep 0.1
                 else
-                  echoE " "
                   drawError "TEST$testNumString: Fan$fan High Comparator Reset Output Test" "Fan$fan High Comparator NOT in Correct Reset State"
-                  logFileImage="$logFileImage\nTEST$testNumString: Fan$fan High Comparator NOT in Correct Reset State"
-                  exit
                 fi    
               else
-                echoE " "
                 drawError "TEST$testNumString: Fan$fan Low Comparator Reset Output Test" "Fan$fan Low Comparator NOT in Correct Reset State"
-                logFileImage="$logFileImage\nTEST$testNumString: Fan$fan Low Comparator NOT in Correct Reset State"
-                exit
               fi    
 
             else
-              echoE " "
               drawError "TEST$testNumString: Fan$fan High Comparator Set Output Test" "Fan$fan High Comparator NOT in Correct Set State"
-              logFileImage="$logFileImage\nTEST$testNumString: Fan$fan High Comparator NOT in Correct Set State"
-              exit
             fi    
           else
-            echoE " "
             drawError "TEST$testNumString: Fan$fan Low Comparator Set Output Test" "Fan$fan Low Comparator NOT in Correct Set State"
-            logFileImage="$logFileImage\nTEST$testNumString: Fan$fan Low Comparator NOT in Correct Set State"
-            exit
           fi    
 
         else
           echoE " "
           drawError "TEST$testNumString: Fan$fan LED Active Check" "LED Not Lit"
-          logFileImage="$logFileImage\nTEST$testNumString: Fan$fan LED Active Check: LED Not Lit"
-          exit
         fi
 
       else
         echoE " "
         drawError "TEST$testNumString: Fan$fan High Comparator Initial Output Test" "Fan$fan High Comparator NOT in Correct Initial State"
-        logFileImage="$logFileImage\nTEST$testNumString: Fan$fan High Comparator NOT in Correct Initial State"
-        exit
       fi    
     else
       echoE " "
       drawError "TEST$testNumString: Fan$fan Low Comparator Initial Output Test" "Fan$fan Low Comparator NOT in Correct Initial State"
-      logFileImage="$logFileImage\nTEST$testNumString: Fan$fan Low Comparator NOT in Correct Initial State"
-      exit
     fi    
   done  
 ########################################################################
@@ -1596,8 +1513,11 @@ fi
 
 if [[ 0 != $doStepperCheck ]]; then
 ########################################################################
-# Loop Through stepper# Check Operation
+# Loop Through stepper# Operation Test
 ########################################################################
+  EQUALS_STRING=" = "
+  OK_STRING="
+o"
   for stepper in {0..3}; do
     testNum=$((testNum + 1))
     testNumString=$(makeTestNUMString "$testNum")
@@ -1606,40 +1526,48 @@ if [[ 0 != $doStepperCheck ]]; then
     doAppend "!TEST$testNumString: Test Stepper$stepper Driver Operation"
     logFileImage="$logFileImage\nTEST$testNumString: Test Stepper$stepper Driver Operation"
 
-    echoE " "
+    echo -ne "read_tmc_field field=sgthrs stepper=\"manual_stepper stepper_$stepper\"\n" > "$TTY" || true
+    INIT_SGTHRS==$(timeout 1 cat "$TTY") || true
+    EXTRACTED_SGTHRS=${INIT_SGTHRS#*$EQUALS_STRING}
+    EXTRACTED_SGTHRS=${EXTRACTED_SGTHRS%$OK_STRING*}
+
     echo -ne "MANUAL_STEPPER ENABLE=1 STEPPER=stepper_$stepper\n" > "$TTY" || true  
-    sleep 0.3
+    sleep 0.1
+    echo -ne "MANUAL_STEPPER SET_POSITION=0 STEPPER=stepper_$stepper\n" > "$TTY" || true  
+    sleep 0.1
     echo -ne "MANUAL_STEPPER MOVE=40 STOP_ON_ENDSTOP=1 STEPPER=stepper_$stepper\n" > "$TTY" || true  
-    sleep 1.5
+    sleep 1
 
     echo -ne "read_tmc_field field=sg_result stepper=\"manual_stepper stepper_$stepper\"\n" > "$TTY" || true
     INIT_SG_RESULT==$(timeout 1 cat "$TTY") || true
-    echoE "Initial SR_RESULT for $stepper: $INIT_SG_RESULT"
+    EXTRACTED_INIT_SG_RESULT=${INIT_SG_RESULT#*$EQUALS_STRING}
+    EXTRACTED_INIT_SG_RESULT=${EXTRACTED_INIT_SG_RESULT%$OK_STRING*}
     
     echo -ne "MANUAL_STEPPER MOVE=30 STEPPER=stepper_$stepper\n" > "$TTY" || true
-    sleep 0.7
+    sleep 0.5
     echo -ne "read_tmc_field field=sg_result stepper=\"manual_stepper stepper_$stepper\"\n" > "$TTY" || true
     FINAL_SG_RESULT==$(timeout 1 cat "$TTY") || true
-    echoE "Final SR_RESULT for $stepper: $FINAL_SG_RESULT"
+    EXTRACTED_FINAL_SG_RESULT=${FINAL_SG_RESULT#*$EQUALS_STRING}
+    EXTRACTED_FINAL_SG_RESULT=${EXTRACTED_FINAL_SG_RESULT%$OK_STRING*}
 
     echo -ne "MANUAL_STEPPER ENABLE=0 STEPPER=stepper_$stepper\n" > "$TTY" || true  
-    sleep 0.3
-    
-    
+    sleep 0.1
 
+    doublesgthrs=$((EXTRACTED_SGTHRS * 2))
+    init_sg_result=$(($EXTRACTED_INIT_SG_RESULT + 0))
+    final_sg_result=$(($EXTRACTED_FINAL_SG_RESULT + 0))
+    echoE "TEST$testNumString: Test Stepper$stepper Operation:"
+    echoE "  sgthrs*2=$doublesgthrs,  init_sg_result=$init_sg_result,  final_sg_result=$final_sg_result."
+    echoE " "
+
+    if [[ "$doublesgthrs" -lt "$init_sg_result" ]]; then
+      drawError "TEST$testNumString: Stepper$stepper Operation Test" "Stepper$stepper Did NOT Return Expect SG_RESULT Value AFTER Homing"
+    elif [[ "$doublesgthrs" -gt "$final_sg_result" ]]; then
+      drawError "TEST$testNumString: Stepper$stepper Operation Test" "Stepper$stepper Did NOT Return Expected SG_RESULT Value AFTER Movement"
+    fi
   done
 ########################################################################
 fi
-
-
-
-
-
-
-
-
-
-
 
 
 ########################################################################
@@ -1682,15 +1610,10 @@ if [[ 1 -eq $sealingFlag ]]; then
 
     echoE " "
     drawPASS   
-   
-#### - Need to Set NeoPixels to BLUE
-    echoE " "
-    echoE "#### Need to Set NeoPixels to BLUE"
   
   else
     echoE " "
     drawError "Software Sealing" "Unable to Start Katapult"
-    logFileImage="$logFileImage\nSoftware Sealing" "Unable to Start Katapult"
   fi
 else
   echoE " "
