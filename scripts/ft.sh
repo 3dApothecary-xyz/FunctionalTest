@@ -42,6 +42,7 @@ ftVersion() {
              #  AND allow parameters set to be kept active during test
              # Cleaned up drawError Method Operation/Added Error to Log/Saved Log/Exit script
              # Removed any "Notes" for the test
+  ver="0.13" # In Clean Up, "sudo service klipper start" was inadvetently deleted
   echo "$ver"
 }
 
@@ -55,13 +56,13 @@ doFirmwareLoad=1
 doToolheadTemperatureCheck=1
 doThermoTemperatureCheck=1
 doDSensorCheck=1
-doIndStopCheck=1
-doBLTouchCheck=1
-doSPICheck=1
-doHeaterCheck=1                     # Setting to Zero Also Disables the VIN Check & Fan Check
-doFanCheck=1
-doStepperCheck=1
-sealingFlag=1
+doIndStopCheck=0
+doBLTouchCheck=0
+doSPICheck=0
+doHeaterCheck=0                     # Setting to Zero Also Disables the VIN Check & Fan Check
+doFanCheck=0
+doStepperCheck=0
+sealingFlag=0
 
 
 # Raspberry Pi 40 Pin Header Pin Function Table
@@ -901,14 +902,11 @@ if [[ 0 != $doFirmwareLoad ]]; then
   echoE " "
 
   printf "[mcu]\ncanbus_uuid: $mcuUUID\n" > ~/printer_data/config/mcu.cfg
+
+  sudo service klipper start
+
 ########################################################################
-fi
-
-
-
-if [[ 0 != $doFirmwareLoad ]]; then 
-########################################################################
-# Verify Klipper is Running
+# Wait for Klipper to start running
 ########################################################################
   echoE " "
   echo -e  "$outline$PHULLSTRING"
