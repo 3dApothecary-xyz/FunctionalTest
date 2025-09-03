@@ -56,13 +56,13 @@ doFirmwareLoad=1
 doToolheadTemperatureCheck=1
 doThermoTemperatureCheck=1
 doDSensorCheck=1
-doIndStopCheck=0
-doBLTouchCheck=0
-doSPICheck=0
-doHeaterCheck=0                     # Setting to Zero Also Disables the VIN Check & Fan Check
-doFanCheck=0
-doStepperCheck=0
-sealingFlag=0
+doIndStopCheck=1
+doBLTouchCheck=1
+doSPICheck=1
+doHeaterCheck=1                     # Setting to Zero Also Disables the VIN Check & Fan Check
+doFanCheck=1
+doStepperCheck=1
+sealingFlag=1
 
 
 # Raspberry Pi 40 Pin Header Pin Function Table
@@ -1619,6 +1619,5 @@ else
 fi
 
 echo -e "$logFileImage" > ~/logs/$logFileName
-
 
 exit
