@@ -423,7 +423,8 @@
     make clean
     ```
     ```
-    make```
+    make
+    ```
     ```
     cp out/klipper.bin ~/bin
     ```
