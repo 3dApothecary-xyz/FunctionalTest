@@ -43,6 +43,7 @@ ftVersion() {
              # Cleaned up drawError Method Operation/Added Error to Log/Saved Log/Exit script
              # Removed any "Notes" for the test
   ver="0.13" # In Clean Up, "sudo service klipper start" was inadvetently deleted
+  ver="0.14" # Added NeoPixel Test
   echo "$ver"
 }
 
@@ -52,17 +53,18 @@ ftVersion() {
 
 # Test Enable Variables 
 doLEDCheck=0                        # Setting to Zero Disables the Manual LED Check
-doFirmwareLoad=1
+doFirmwareLoad=0
 doToolheadTemperatureCheck=1
-doThermoTemperatureCheck=1
+doThermoTemperatureCheck=0
 doDSensorCheck=1
-doIndStopCheck=1
-doBLTouchCheck=1
-doSPICheck=1
-doHeaterCheck=1                     # Setting to Zero Also Disables the VIN Check & Fan Check
-doFanCheck=1
-doStepperCheck=1
-sealingFlag=1
+doNeoPixelCheck=1
+doIndStopCheck=0
+doBLTouchCheck=0
+doSPICheck=0
+doHeaterCheck=0                     # Setting to Zero Also Disables the VIN Check & Fan Check
+doFanCheck=0
+doStepperCheck=0
+sealingFlag=0
 
 
 # Raspberry Pi 40 Pin Header Pin Function Table
@@ -1152,6 +1154,52 @@ if [[ 0 != $doDSensorCheck ]]; then
     fi
 
     expectedPin=$((expectedPin + 1))
+    expectedValue=$((expectedValue * 2))
+  
+  done
+########################################################################
+fi
+
+
+if [[ 0 != $doNeoPixelCheck ]]; then
+########################################################################
+# Loop Through Check NEOPIXEL# Operation
+########################################################################
+  NeoPixelPins=("NeoPixel0pin" "NeoPixel1pin" ) 
+  currentNeoPixel=0
+  expectedValue=64
+  for NeoPixelPin in "${NeoPixelPins[@]}"; do
+    testNum=$((testNum + 1))
+    testNumString=$(makeTestNUMString "$testNum")
+
+    echo -e  "$outline$PHULLSTRING"
+    doAppend "!TEST$testNumString: Check $NeoPixelPin Operation"
+    logFileImage="$logFileImage\nTEST$testNumString: Check $NeoPixelPin Operation"
+
+    echo -ne "SETNEOPIXEL NUMBER=$currentNeoPixel VALUE=1\n" > "$TTY" || true
+    sleep 0.5
+    echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+    TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+    
+    if echo "$TEST_RESPONSE" | grep -q "sensorvalue=$expectedValue"; then
+      echo -ne "SETNEOPIXEL NUMBER=$currentNeoPixel VALUE=0\n" > "$TTY" || true
+      sleep 0.5
+      echo -ne "GETSENSORVALUE\n" > "$TTY" || true
+      TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+          
+      if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
+        echoE " "
+        sleep 0.1
+      else
+        drawError "TEST$testNumString: $NeoPixelPin Not Reset" "$NeoPixelPin Not Reset"
+      fi
+    else
+      echoE " "
+      echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
+      drawError "TEST$testNumString: $NeoPixelPin Set Check" "$NeoPixelPin NOT Set"
+    fi
+
+    currentNeoPixel=$((currentNeoPixel + 1))
     expectedValue=$((expectedValue * 2))
   
   done
