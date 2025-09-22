@@ -44,6 +44,17 @@ ftVersion() {
              # Removed any "Notes" for the test
   ver="0.13" # In Clean Up, "sudo service klipper start" was inadvetently deleted
   ver="0.14" # Added NeoPixel Test
+  ver="0.15" # Added Product/Version Testing
+             # Created readDlay Variable for:
+             # - Product check
+             # - Version Check
+             # - VINMON Check
+             # - sensorvalue Init Check
+             # - MCU Temperature Read
+             # - Toolhead Temperature read
+             # - DSensor Test
+             # - NeoPixel Test
+             # Added Check for Klipper Running if Klippler Firmware is not loaded
   echo "$ver"
 }
 
@@ -51,20 +62,22 @@ ftVersion() {
 # mykepredko@3dapothecary.xyz
 # (C) Copyright 2025 for File Contents and Data Formatting
 
-# Test Enable Variables 
+# Test Enable/Operation Variables 
 doLEDCheck=0                        # Setting to Zero Disables the Manual LED Check
 doFirmwareLoad=1
 doToolheadTemperatureCheck=1
 doThermoTemperatureCheck=0
 doDSensorCheck=1
 doNeoPixelCheck=1
-doIndStopCheck=1
-doBLTouchCheck=1
-doSPICheck=1
-doHeaterCheck=1                     # Setting to Zero Also Disables the VIN Check & Fan Check
-doFanCheck=1
-doStepperCheck=1
-sealingFlag=1
+doIndStopCheck=0
+doBLTouchCheck=0
+doSPICheck=0
+doHeaterCheck=0                     # Setting to Zero Also Disables the VIN Check & Fan Check
+doFanCheck=0
+doStepperCheck=0
+sealingFlag=0
+readDlay=0.4
+
 
 
 # Raspberry Pi 40 Pin Header Pin Function Table
@@ -965,6 +978,21 @@ if [[ 0 != $doFirmwareLoad ]]; then
     drawError "VKR: Error.  Klipper Not Starting Up" "Contact Support"
   fi
 ########################################################################
+else
+########################################################################
+# No Firmware Load: Check that Klipper is running
+########################################################################
+  sleep 2
+
+  echo -ne "STATUS\n" > "$TTY" 
+  RESPONSE=$(timeout 2 cat "$TTY") || true
+
+  if echo "$RESPONSE" | grep -q "Klipper state: Ready"; then
+    echoE "STATUS RESPONSE=$RESPONSE"
+    echoE " "
+  else
+    drawError "VKR: Error.  Klipper Not Running" "Contact Support"
+  fi
 fi
 
 
@@ -974,6 +1002,52 @@ fi
 ########################################################################
 
 sleep 1
+
+########################################################################
+# Check Product Type
+########################################################################
+testNum=$((testNum + 1))
+testNumString=$(makeTestNUMString "$testNum")
+
+echo -e  "$outline$PHULLSTRING"
+doAppend "!TEST$testNumString: Product Type Check"
+logFileImage="$logFileImage\nTEST$testNumString: Product Type Check"
+
+echo -ne "RETURNPRODUCT\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
+
+echoE "$TEST_RESPONSE"
+
+if echo "$TEST_RESPONSE" | grep -q "Product: KGP 4x2209"; then
+  echoE " "
+else
+  drawError "TEST$testNumString: Product Type Check" "Invalid Product Under Test"
+fi
+
+########################################################################
+# printer.cfg Version Test
+########################################################################
+testNum=$((testNum + 1))
+testNumString=$(makeTestNUMString "$testNum")
+
+echo -e  "$outline$PHULLSTRING"
+doAppend "!TEST$testNumString: printer.cfg Version Check"
+logFileImage="$logFileImage\nTEST$testNumString: printer.cfg Version Check"
+
+echo -ne "RETURNVERSION\n" > "$TTY" || true
+
+TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
+
+echoE "$TEST_RESPONSE"
+
+PCversion=$(ftVersion) 
+echo -e "PCversion = $PCversion"
+if echo "$TEST_RESPONSE" | grep -q "Version: $PCversion"; then
+  echoE " "
+else
+  drawError "TEST$testNumString: printer.cfg Version Check" "Invalid printer.cfg Version"
+fi
 
 ########################################################################
 # VINMON
@@ -987,7 +1061,7 @@ logFileImage="$logFileImage\nTEST$testNumString: VINMON"
 
 echo -ne "VINTEST\n" > "$TTY" || true
 
-TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+TEST_RESPONSE=$(timeout 0.5 cat "$TTY") || true
 
 echoE "$TEST_RESPONSE"
 
@@ -1009,7 +1083,7 @@ doAppend "!TEST$testNumString: sensorvalue Initial State Check"
 logFileImage="$logFileImage\nTEST$testNumString: Verify sensorvalue Initial State is 0"
 
 echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
 echoE "sensorvalue Initial State: $TEST_RESPONSE"
 
 if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
@@ -1032,7 +1106,7 @@ logFileImage="$logFileImage\nTEST$testNumString: MCU Temperature"
 
 echo -ne "MCUTEST\n" > "$TTY" || true
 
-TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
 
 echoE "$TEST_RESPONSE"
 
@@ -1055,7 +1129,7 @@ if [[ 0 != $doToolheadTemperatureCheck ]]; then
 
   echo -ne "TOOLHEADTEST\n" > "$TTY" || true
 
-  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+  TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
 
   echoE "$TEST_RESPONSE"
 
@@ -1116,9 +1190,9 @@ if [[ 0 != $doDSensorCheck ]]; then
     logFileImage="$logFileImage\nTEST$testNumString: Check $dSensorpin Operation"
 
     echo -ne "SETDEMUX VALUE=$expectedPin\n" > "$TTY" || true
-    sleep 0.5
+    sleep $readDlay
     echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-    TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+    TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
     
     if echo "$TEST_RESPONSE" | grep -q "sensorvalue=$expectedValue"; then
       if [[ 0 != $doLEDCheck ]]; then
@@ -1134,9 +1208,9 @@ if [[ 0 != $doDSensorCheck ]]; then
         echoE " "
 
         echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
-        sleep 0.5
+        sleep $readDlay
         echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-        TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+        TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
           
         if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
           sleep 0.1
@@ -1177,15 +1251,15 @@ if [[ 0 != $doNeoPixelCheck ]]; then
     logFileImage="$logFileImage\nTEST$testNumString: Check $NeoPixelPin Operation"
 
     echo -ne "SETNEOPIXEL NUMBER=$currentNeoPixel VALUE=1\n" > "$TTY" || true
-    sleep 0.5
+    sleep $readDlay
     echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-    TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+    TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
     
     if echo "$TEST_RESPONSE" | grep -q "sensorvalue=$expectedValue"; then
       echo -ne "SETNEOPIXEL NUMBER=$currentNeoPixel VALUE=0\n" > "$TTY" || true
-      sleep 0.5
+      sleep $readDlay
       echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-      TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+      TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
           
       if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
         echoE " "
