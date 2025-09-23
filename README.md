@@ -36,7 +36,7 @@
 
 ## NewHat3b/HeaterBoardb Functions SBC 40 Pin Header Connections
 
-![Functional Test Pinout](NewHat3b-HeaterBoardb_pinout.png)
+![Functional Test Pinout](images/NewHat3b-HeaterBoardb_pinout.png)
 
 ## Functional Test Electrical Setup Process
 
