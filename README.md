@@ -34,9 +34,9 @@
 * Company Supplied: 2x Custom Motor Base with Striker
 * Company Supplied: 4x Lerdge NEMA 17 42mm Motors with Dupont Connectors
 
-## NewHat3a/HeaterBoard Functions SBC 40 Pin Header Connections
+## NewHat3b/HeaterBoardb Functions SBC 40 Pin Header Connections
 
-![Functional Test Pinout](images/NewHat3-HeaterBoard_pinout.png)
+![Functional Test Pinout](NewHat3b-HeaterBoardb_pinout.png)
 
 ## Functional Test Electrical Setup Process
 
