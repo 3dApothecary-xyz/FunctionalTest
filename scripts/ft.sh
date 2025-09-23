@@ -64,14 +64,14 @@ ftVersion() {
 
 # Test Enable/Operation Variables 
 doLEDCheck=0                        # Setting to Zero Disables the Manual LED Check
-doFirmwareLoad=1
+doFirmwareLoad=0
 doToolheadTemperatureCheck=1
-doThermoTemperatureCheck=0
+doThermoTemperatureCheck=1
 doDSensorCheck=1
 doNeoPixelCheck=1
-doIndStopCheck=0
-doBLTouchCheck=0
-doSPICheck=0
+doIndStopCheck=1
+doBLTouchCheck=1
+doSPICheck=1
 doHeaterCheck=0                     # Setting to Zero Also Disables the VIN Check & Fan Check
 doFanCheck=0
 doStepperCheck=0
@@ -82,50 +82,50 @@ readDlay=0.4
 
 # Raspberry Pi 40 Pin Header Pin Function Table
 #
-# -------------+-------------+-------------+-------------------------------------------------|
+#--------------+-------------+-------------+-------------------------------------------------|
 # Function     | Pin Number  | GPIO Number | Comment                                         |
-# -------------+-------------+-------------+-------------------------------------------------|
-# | +3V3 Power |  1          | N/A         |                                                 |
-# | +5V Power  |  2          | N/A         |                                                 |
+#--------------+-------------+-------------+-------------------------------------------------|
+# +3V3 Power   |  1          | N/A         |                                                 |
+# +5V Power    |  2          | N/A         |                                                 |
 neopixel0=3    #  3          | GPIO2       |                                                 |
-# | +5V Power  |  4          | N/A         |                                                 |
+# +5V Power    |  4          | N/A         |                                                 |
 neopixel1=5    #  5          | GPIO3       |                                                 |
-# | GND        |  6          | N/A         |                                                 |
+# GND          |  6          | N/A         |                                                 |
 BOOT0=7        #  7          | GPIO4       |                                                 |
-# | UART0 TX   |  8          | N/A         |                                                 |
-# | GND        |  9          | N/A         |                                                 |
-# | UART0 RX   | 10          | N/A         |                                                 |
+# UART0 TX     |  8          | N/A         |                                                 |
+# GND          |  9          | N/A         |                                                 |
+# UART0 RX     | 10          | N/A         |                                                 |
 RESET=11       # 11          | GPIO17      |                                                 |
-blprobe=12     # 12          | GPIO18      |                                                 |
-spicsmosi=13   # 13          | GPIO27      |                                                 |
-# | GND        | 14          | N/A         |                                                 |
-blservo=15     # 15          | GPIO22      |                                                 |
-htr1complo=16  # 16          | GPIO23      |                                                 |
-# | +3V3 Power | 17          | N/A         |                                                 |
-htr1comphi=18  # 18          | GPIO24      |                                                 |
-fan0comphi=19  # 19          | GPIO19      |                                                 |
-# | GND        | 20          | N/A         |                                                 |
+ssrcomphi=12   # 12          | GPIO18      |                                                 |
+htr0complo=13  # 13          | GPIO27      |                                                 |
+# GND          | 14          | N/A         |                                                 |
+fan0comphi=15  # 15          | GPIO22      |                                                 |
+htr0comphi=16  # 16          | GPIO23      |                                                 |
+# +3V3 Power   | 17          | N/A         |                                                 |
+fan0complo=18  # 18          | GPIO24      | VIN to HeaterBoard Provided using this pin      |
+fan1comphi=19  # 19          | GPIO10      |                                                 |
+# GND          | 20          | N/A         |                                                 |
 DEMUX_C=21     # 21          | GPIO9       |                                                 |
-fan0complo=22  # 22          | GPIO25      | VIN to HeaterBoard Provided using this pin      |
+fan2complo=22  # 22          | GPIO25      |                                                 |
 DEMUX_B=23     # 23          | GPIO11      |                                                 |
-htr0complo=24  # 24          | GPIO8       |                                                 |
-# | GND        | 25          | N/A         |                                                 |
+htr1complo=24  # 24          | GPIO8       |                                                 |
+# GND          | 25          | N/A         |                                                 |
 DEMUX_A=26     # 26          | GPIO7       |                                                 |
-# | RESERVED   | 27          | N/A         |                                                 |
-# | RESERVED   | 28          | N/A         |                                                 |
-fan2comphi=29  # 29          | GPIO5       |                                                 |
-# | GND        | 30          | N/A         |                                                 |
-fan3complo=31  # 31          | GPIO6       |                                                 |
-fan3comphi=32  # 32          | GPOI012     |                                                 |
-htr0comphi=33  # 33          | GPIO19      |                                                 |
-# | GND        | 34          | N/A         |                                                 |
-fan1complo=35  # 35          | GPIO19      |                                                 |
-fan2complo=36  # 36          | GPIO16      |                                                 |
-ssrcomphi=37   # 37          | GPIO26      |                                                 |
-ssrcomplo=38   # 38          | GPIO20      |                                                 |
-# | GND        | 39          | N/A         |                                                 |
-fan1comphi=40  # 40          | GPIO21      |                                                 |
-# -------------+-------------+-------------+-------------------------------------------------|
+# RESERVED     | 27          | N/A         |                                                 |
+# RESERVED     | 28          | N/A         |                                                 |
+htr1comphi=29  # 29          | GPIO5       |                                                 |
+# GND          | 30          | N/A         |                                                 |
+fan1complo=31  # 31          | GPIO6       |                                                 |
+ssrcomplo=32   # 32          | GPIO12      |                                                 |
+fan2comphi=33  # 33          | GPIO13      |                                                 |
+# GND          | 34          | N/A         |                                                 |
+blprobe=35     # 35          | GPIO19      |                                                 |
+fan3complo=36  # 36          | GPIO16      |                                                 |
+adxlmosi=37    # 37          | GPIO26      |                                                 |
+blservo=38     # 38          | GPIO20      |                                                 |
+# GND          | 39          | N/A         |                                                 |
+fan3comphi=40  # 40          | GPI021      |                                                 |
+#--------------+-------------+-------------+-------------------------------------------------|
 
 
 # NOTE for logic debugging use the Bash Debugger running on a CB2 Host
@@ -1061,7 +1061,7 @@ logFileImage="$logFileImage\nTEST$testNumString: VINMON"
 
 echo -ne "VINTEST\n" > "$TTY" || true
 
-TEST_RESPONSE=$(timeout 0.5 cat "$TTY") || true
+TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
 
 echoE "$TEST_RESPONSE"
 
@@ -1156,7 +1156,7 @@ if [[ 0 != $doThermoTemperatureCheck ]]; then
 
     echo -ne "THERMTEST VALUE=$thermNum\n" > "$TTY" || true
 
-    TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+    TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
 
     echoE "$TEST_RESPONSE"
 
@@ -1295,7 +1295,7 @@ if [[ 0 != $doIndStopCheck ]]; then
   echo -ne "SETDEMUX VALUE=6\n" > "$TTY" || true
   sleep 0.5
   echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+  TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
   echoE "Inductive Sensor Set State: $TEST_RESPONSE"
     
   if echo "$TEST_RESPONSE" | grep -q "sensorvalue=32"; then
@@ -1314,7 +1314,7 @@ if [[ 0 != $doIndStopCheck ]]; then
       sleep 0.5
           
       echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-      TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+      TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
       echoE "Inductive Sensor Reset State: $TEST_RESPONSE"
           
       if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
@@ -1351,14 +1351,14 @@ if [[ 0 != $doBLTouchCheck ]]; then
   echo -ne "SETBLSERVO VALUE=1\n" > "$TTY" || true
   sleep 0.5
   echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+  TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
   echoE "BLTouch Servo Set State: $TEST_RESPONSE"
     
   if echo "$TEST_RESPONSE" | grep -q "sensorvalue=512"; then
     echo -ne "SETBLSERVO VALUE=0\n" > "$TTY" || true
     sleep 0.5
     echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-    TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+    TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
     echoE "BLTouch Servo Reset State: $TEST_RESPONSE"
           
     if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
@@ -1370,7 +1370,7 @@ if [[ 0 != $doBLTouchCheck ]]; then
   else
     echoE " "
     echo -ne "SETDEMUX VALUE=0\n" > "$TTY" || true
-    drawError "TEST$testNumString: Inductive Sensor Set Check" "Inductive Sensor NOT Set"
+    drawError "TEST$testNumString: BLTouch Servo Set Check" "BLTouch Servo NOT Set"
   fi
 ########################################################################
 # Check the BLTouch Probe
@@ -1385,7 +1385,7 @@ if [[ 0 != $doBLTouchCheck ]]; then
   echo -ne "SETBLPROBE VALUE=1\n" > "$TTY" || true
   sleep 0.5
   echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+  TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
   echoE "BLTouch Probe Set State: $TEST_RESPONSE"
     
   if echo "$TEST_RESPONSE" | grep -q "sensorvalue=256"; then
@@ -1405,7 +1405,7 @@ if [[ 0 != $doBLTouchCheck ]]; then
       sleep 0.5
           
       echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-      TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+      TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
       echoE "BLTouch Probe Reset State: $TEST_RESPONSE"
           
       if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
@@ -1440,25 +1440,25 @@ if [[ 0 != $doSPICheck ]]; then
   logFileImage="$logFileImage\nTEST$testNumString: Check SPI CS/MOSI OR Gate Operation"
 
   for spi in {3..1}; do
-    echo -ne "SETSPICSMOSI VALUE=$spi\n" > "$TTY" || true
+    echo -ne "SETADXLMOSI VALUE=$spi\n" > "$TTY" || true
     sleep 0.5
     echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-    TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+    TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
     echoE "SPI CS/MOSI OR Gate Set $spi: $TEST_RESPONSE"
     
     if echo "$TEST_RESPONSE" | grep -q "sensorvalue=1024"; then
       echoE " "
     else
       echoE " "
-      echo -ne "SETSPICSMOSI VALUE=0\n" > "$TTY" || true
+      echo -ne "SETADXLMOSI VALUE=0\n" > "$TTY" || true
       drawError "TEST$testNumString: SPI CS/MOSI OR Gate Set $spi Check" "SPI CS/MOSI OR Gate NOT Set"
     fi
   done
 
-  echo -ne "SETSPICSMOSI VALUE=0\n" > "$TTY" || true
+  echo -ne "SETADXLMOSI VALUE=0\n" > "$TTY" || true
   sleep 0.5
   echo -ne "GETSENSORVALUE\n" > "$TTY" || true
-  TEST_RESPONSE=$(timeout 1 cat "$TTY") || true
+  TEST_RESPONSE=$(timeout $readDlay cat "$TTY") || true
   echoE "SPI CS/MOSI OR Gate Set 0: $TEST_RESPONSE"
     
   if echo "$TEST_RESPONSE" | grep -q "sensorvalue=0"; then
