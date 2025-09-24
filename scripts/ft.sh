@@ -55,6 +55,7 @@ ftVersion() {
              # - DSensor Test
              # - NeoPixel Test
              # Added Check for Klipper Running if Klippler Firmware is not loaded
+             # Updated "FLS:" Numbering to better watch Flash Update Operations
   echo "$ver"
 }
 
@@ -64,7 +65,7 @@ ftVersion() {
 
 # Test Enable/Operation Variables 
 doLEDCheck=0                        # Setting to Zero Disables the Manual LED Check
-doFirmwareLoad=0
+doFirmwareLoad=1
 doToolheadTemperatureCheck=1
 doThermoTemperatureCheck=1
 doDSensorCheck=1
@@ -749,7 +750,11 @@ if [[ 0 != $doFirmwareLoad ]]; then
   fi
 
   if [ 0 -ne $loadKatapult ]; then  
-    sudo dfu-util -a 0 -D ~/bin/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11 || true
+    DFU_response=$(sudo dfu-util -a 0 -D ~/bin/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11) || true
+
+    echoE " "
+    echoE "FLS:04"
+    echoE "$DFU_response"
 
     sleep 1
     
@@ -760,7 +765,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
     katapultResponse=$(ls /dev/serial/by-id) || true
 
     echoE " "
-    echoE "FLS:04"
+    echoE "FLS:05"
     echoE "$katapultResponse"
     echoE " "
 
@@ -847,7 +852,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
   dfuResponse=$(ls /dev/serial/by-id)
 
   echoE " "
-  echoE "FLS:05"
+  echoE "FLS:06"
   echoE "$dfuResponse"
   echoE " "
 
@@ -864,7 +869,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
   configFolder=$(ls ~/printer_data/config)
 
   echoE " "
-  echoE "FLS:06"
+  echoE "FLS:07"
   echoE "$configFolder"
   echoE " "
 
@@ -874,7 +879,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
 
   canUUID=$(~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0)
 
-  echoE "FLS:07"
+  echoE "FLS:08"
   echoE "$canUUID"
   echoE " "
 
@@ -888,7 +893,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
   toolheadUUID="${toolheadUUID#canbus_uuid: }"
   toolheadUUID="${toolheadUUID%:0:12}"
 
-  echoE "FLS:08"
+  echoE "FLS:09"
   echoE "$toolheadUUID"
   echoE " "
 
@@ -899,7 +904,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
       arrayElement="${arrayElement#Found canbus_uuid=}"  
       arrayElement="${arrayElement:0:12}"
 
-      echoE "FLS:09-$fls"
+      echoE "FLS:10-$fls"
       fls=$((fls+1))
       echoE "$arrayElement"
       echoE " "
@@ -912,7 +917,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
     fi
   done
 
-  echoE "FLS:10"
+  echoE "FLS:11"
   echoE "$mcuUUID"
   echoE " "
 
