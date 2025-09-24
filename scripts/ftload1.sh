@@ -8,11 +8,11 @@ mkdir python
 cd python
 wget -O cycle38.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycle38.py?raw=true
 wget -O cycleBLPROBE.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycleBLPROBE.py?raw=true
+wget -O cycleBOOT0.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycleBOOT0.py?raw=true
 wget -O cycleRESET.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycleRESET.py?raw=true
 wget -O enableDFU.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/enableDFU.py?raw=true
 wget -O enableKatapult.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/enableKatapult.py?raw=true
 wget -O gpioread.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/gpioread.py?raw=true
-wget -O toggleBOOT0.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/toggleBOOT0.py?raw=true
 chmod 777 *.py
 cd ~
 #mkdir scripts
