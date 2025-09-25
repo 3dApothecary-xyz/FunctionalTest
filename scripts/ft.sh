@@ -56,6 +56,7 @@ ftVersion() {
              # - NeoPixel Test
              # Added Check for Klipper Running if Klippler Firmware is not loaded
              # Updated "FLS:" Numbering to better watch Flash Update Operations
+             # Updated Firmware Load and eliminted the "enableDFU.py" operations
   echo "$ver"
 }
 
@@ -716,64 +717,69 @@ if [[ 0 != $doFirmwareLoad ]]; then
   echoE " "
 
   if echo "$lsusbResponse" | grep -q "0483:df11"; then
-    loadKatapult=1
-  else
-    python ~/python/enableKatapult.py
+#-    loadKatapult=1
+    DFU_response=$(sudo dfu-util -a 0 -D ~/bin/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11) || true  #+
+
+    echoE " "                                                                                                                        #+
+    echoE "FLS:02"                                                                                                                   #+
+    echoE "$DFU_response"                                                                                                            #+
+#-  else
+#-    python ~/python/enableKatapult.py
   
     sleep 1
-  
-    katapultResponse=$(ls /dev/serial/by-id) || true
+#-  
+#-    katapultResponse=$(ls /dev/serial/by-id) || true
+#-
+#-    echoE "FLS:02"
+#-    echoE "$katapultResponse"
+#-    echoE " "
 
-    echoE "FLS:02"
-    echoE "$katapultResponse"
-    echoE " "
-
-    if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
-      loadKatapult=0
-    else
-      python ~/python/enableDFU.py
-  
-      sleep 1
-        
-      lsusbResponse=$(lsusb) || true
-
-      echoE "FLS:03"
-      echoE "$lsusbResponse"
-      echoE " "
-
-      if echo "$lsusbResponse" | grep -q "0483:df11"; then
-        loadKatapult=1
-      else
-        drawError "Loading Firmware" "Unable to Activate DFU Mode or Katapult"
-      fi
-    fi
+#-    if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
+#-      loadKatapult=0
+#-    else
+#-      python ~/python/enableDFU.py
+#-  
+#-      sleep 1
+#-        
+#-      lsusbResponse=$(lsusb) || true
+#-
+#-      echoE "FLS:03"
+#-      echoE "$lsusbResponse"
+#-      echoE " "
+#-
+#-      if echo "$lsusbResponse" | grep -q "0483:df11"; then
+#-        loadKatapult=1
+#-      else
+#-        drawError "Loading Firmware" "Unable to Activate DFU Mode or Katapult"
+#-      fi
+#-    fi
   fi
 
-  if [ 0 -ne $loadKatapult ]; then  
-    DFU_response=$(sudo dfu-util -a 0 -D ~/bin/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11) || true
+#-  if [ 0 -ne $loadKatapult ]; then  
+#-    DFU_response=$(sudo dfu-util -a 0 -D ~/bin/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11) || true
 
-    echoE " "
-    echoE "FLS:04"
-    echoE "$DFU_response"
+#-    echoE " "
+#-    echoE "FLS:04"
+#-    echoE "$DFU_response"
 
-    sleep 1
+#-    sleep 1
     
-    python ~/python/enableKatapult.py
+  python ~/python/enableKatapult.py
   
-    sleep 1
+  sleep 1
   
-    katapultResponse=$(ls /dev/serial/by-id) || true
+  katapultResponse=$(ls /dev/serial/by-id) || true
 
-    echoE " "
-    echoE "FLS:05"
-    echoE "$katapultResponse"
-    echoE " "
+  echoE " "
+  echoE "FLS:03"
+  echoE "$katapultResponse"
+  echoE " "
 
-    if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
-      loadKatapult=1
-    else
-      drawError "Loading Firmware" "Error with Katapult Loading"
-    fi
+  if [! echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_" ]; then
+#-      loadKatapult=1
+#-    else
+    drawError "Loading Firmware" "Error with Katapult Loading"
+#-    fi
   fi
 
   python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/serial/by-id/$katapultResponse
@@ -852,13 +858,13 @@ if [[ 0 != $doFirmwareLoad ]]; then
   dfuResponse=$(ls /dev/serial/by-id)
 
   echoE " "
-  echoE "FLS:06"
+  echoE "FLS:04"
   echoE "$dfuResponse"
   echoE " "
 
-  if echo "$dfuResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
-    loadKatapult=1
-  else
+  if [! echo "$dfuResponse" | grep -q "usb-katapult_stm32g0b1xx_" ]; then
+#-    loadKatapult=1
+#-  else
     drawError "Loading Firmware" "Unable to Restart Katapult after KGP_4x2209_DFU.bin Load"
   fi
 
@@ -869,7 +875,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
   configFolder=$(ls ~/printer_data/config)
 
   echoE " "
-  echoE "FLS:07"
+  echoE "FLS:05"
   echoE "$configFolder"
   echoE " "
 
@@ -879,7 +885,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
 
   canUUID=$(~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0)
 
-  echoE "FLS:08"
+  echoE "FLS:06"
   echoE "$canUUID"
   echoE " "
 
@@ -893,7 +899,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
   toolheadUUID="${toolheadUUID#canbus_uuid: }"
   toolheadUUID="${toolheadUUID%:0:12}"
 
-  echoE "FLS:09"
+  echoE "FLS:07"
   echoE "$toolheadUUID"
   echoE " "
 
@@ -904,7 +910,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
       arrayElement="${arrayElement#Found canbus_uuid=}"  
       arrayElement="${arrayElement:0:12}"
 
-      echoE "FLS:10-$fls"
+      echoE "FLS:08-$fls"
       fls=$((fls+1))
       echoE "$arrayElement"
       echoE " "
@@ -917,7 +923,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
     fi
   done
 
-  echoE "FLS:11"
+  echoE "FLS:09"
   echoE "$mcuUUID"
   echoE " "
 
