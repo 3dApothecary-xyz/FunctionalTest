@@ -318,7 +318,7 @@
 
 ### Enable CANBus Operation
 
-24. The following commands and checks found at: [Estoterical CANBus Guide](https://canbus.esoterical.online/Getting_Started.html)
+25. The following commands and checks found at: [Estoterical CANBus Guide](https://canbus.esoterical.online/Getting_Started.html)
     ```
     sudo systemctl enable systemd-networkd
     ```
@@ -334,7 +334,7 @@
 
 ![SSH of the Previous Three Commands](images/networkd_Running.png)
 
-25. Enter:
+26. Enter:
     ```
     sudo systemctl disable systemd-networkd-wait-online.service
     ```
@@ -350,7 +350,7 @@
 
 ![CAN Rules Check Response](images/CAN_rules_check.png)
 
-26. Enter:
+27. Enter:
     ```
     echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\nRestartSec=0.1s\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null
     ```
@@ -364,15 +364,22 @@
 
 ### Reboot to Setup CAN Features
 
-27. Enter:
+28. Enter:
 
     ```
     sudo reboot now
     ```
 
-28. Wait 2 minutes then `ssh biqu@kgpft1` and enter password `biqu` when prompted
+29. Wait 2 minutes then `ssh biqu@kgpft1` and enter password `biqu` when prompted
 
-29. Run `python python/cycle38.py` and check `http://kgpft1` to make sure everkything is okay
+29. As was done above, if NewHat3B/HeaterBoardb is installed, test python operation with:
+    ```
+    python python/cycleBLPROBE.py
+    ```
+    Else Test python operation with:
+    ```
+    python python/cycle38.py
+    ```
 
 ![kgpft1 Mainsail Webpage](images/Mainsail_Webpage.png)
 
