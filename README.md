@@ -312,9 +312,9 @@
     ```
     Else Test python operation with:
     ```
-    python python/cycle38.py
+    python python/cycle40.py
     ```
-    * Check Pin 38 on KGP 4x2209's Raspberry Pi 40Pin Connector with a DMM: Pin should be cycling between 0V and 3.3V every 2 Seconds
+    * Check Pin 40 on KGP 4x2209's Raspberry Pi 40Pin Connector with a DMM: Pin should be cycling between 0V and 3.3V every 2 Seconds
 
 ### Enable CANBus Operation
 
@@ -378,7 +378,7 @@
     ```
     Else Test python operation with:
     ```
-    python python/cycle38.py
+    python python/cycle40.py
     ```
 
 ![kgpft1 Mainsail Webpage](images/Mainsail_Webpage.png)
