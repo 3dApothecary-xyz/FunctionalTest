@@ -7,6 +7,7 @@ sudo apt install python3 python3-serial -y
 mkdir python
 cd python
 wget -O cycle38.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycle38.py?raw=true
+wget -O cycle40.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycle40.py?raw=true
 wget -O cycleBLPROBE.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycleBLPROBE.py?raw=true
 wget -O cycleBOOT0.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycleBOOT0.py?raw=true
 wget -O cycleRESET.py https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/python/cycleRESET.py?raw=true
