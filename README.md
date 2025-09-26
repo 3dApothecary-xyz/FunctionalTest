@@ -670,8 +670,8 @@ install_script: install.sh
     cd ~/klipper
     ```
 
-73. Configure Klipper for the Toolhead Controller using the following command with the Parameters:
-   ```
+74. Configure Klipper for the Toolhead Controller using the following command with the Parameters:
+    ```
     make menuconfig
     ```
 
