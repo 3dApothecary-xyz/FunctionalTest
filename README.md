@@ -346,7 +346,8 @@
     * Execute:
         * `echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\nRestartSec=0.1s\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null`
 
-    * Check to see that the CAN Network Parameters were set correctly to the expected response below using the command: `cat /etc/systemd/network/25-can.network`
+    * Check to see that the CAN Network Parameters were set correctly to the expected response below using the command: 
+        * `cat /etc/systemd/network/25-can.network`
 
 ![CAN Network Check Response](images/CAN_network_check.png)
 
