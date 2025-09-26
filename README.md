@@ -331,8 +331,7 @@
 
     * Check to see that networkd is operating properly checking the expected responese using the command:
         * `systemctl | grep systemd-networkd`
-
-![SSH of the Previous Three Commands](images/networkd_Running.png)
+        * ![SSH of the Previous Three Commands](images/networkd_Running.png)
 
     * Execute:
         * `sudo systemctl disable systemd-networkd-wait-online.service`
@@ -340,16 +339,14 @@
 
     * Check to see that the CAN rules were applied correctly to the expected response below using the command: 
         * `cat /etc/udev/rules.d/10-can.rules`
-
-![CAN Rules Check Response](images/CAN_rules_check.png)
+        * ![CAN Rules Check Response](images/CAN_rules_check.png)
 
     * Execute:
         * `echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\nRestartSec=0.1s\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null`
 
     * Check to see that the CAN Network Parameters were set correctly to the expected response below using the command: 
         * `cat /etc/systemd/network/25-can.network`
-
-![CAN Network Check Response](images/CAN_network_check.png)
+        * ![CAN Network Check Response](images/CAN_network_check.png)
 
     * Check for final message from script: "ftcanload1.sh EXECUTED SUCCERSSFULLY"
 
