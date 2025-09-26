@@ -13,3 +13,6 @@ if [[ "${serialDevResponse:0:25}" != "$expectedSerialDevResponse" ]]; then
 fi
 
 python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/serial/by-id/$serialDevResponse
+
+echo -e "  "
+echo -e "ftloaddfu.sh EXECUTED SUCCESSFULLY"
