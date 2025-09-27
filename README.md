@@ -488,65 +488,55 @@
           ```
         * else press "RESET" twice
     
-42. Enter the following command to display the USB Device Address:
+42. Load the DFU Enable Firmware into the KGP 4x2209's MCU using the following script command that carries out the commands that follow:
     ```
-    ls /dev/serial/by-id
-    ``` 
-
-![Katapult Active](images/Katapult_Active.png)
-
-43. Using the USB Serial Address found in the Previous Step, Flash the DFU Mode Enable firmware using the command:
+    curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/ftloaddfu.sh | bash
     ```
-    python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/serial/by-id/{USB ADDRESS FOUND IN PREVIOUS STEP}
-    ```
-    * This will result in the DFU repeatedly Flashing three times quickly followed by one lone flash
+    * Check for Katapult Active by verifying hte flashing LED on teh DGP 4x2209 and then enter  the following command to display the USB Device Address:
+        * `ls /dev/serial/by-id```
+        * ![Katapult Active](images/Katapult_Active.png)
 
-44. Enable Katapult again.
+    * Using the USB Serial Address found in the Previous Step, Flash the DFU Mode Enable firmware using the command:
+        * `python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/serial/by-id/{USB ADDRESS FOUND IN PREVIOUS STEP}`
+
+43. Enable Katapult again.
     * If a NewHat3 is on the board execute
       ```
       python ~/python/enableKatapult.py
       ```
     * Else Press `RESET` twice quickly which will enable Katapult and the DFU LED will flash on and off regularly
 
-45. Check for Katapult active by verifying the flashing LED on KGP 4x2209 and then enter the following command to display the USB Device Address:
+44. Load Klipper firmware into the KGP 4x2209's MCU and save the CAN UUID using the following script command that carries out the commands that follow:
     ```
-    ls /dev/serial/by-id
-    ``` 
+    curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/ftloadklipper.sh | bash
+    ```
 
-![Katapult Active](images/Katapult_Active.png)
+    * Check for Katapult active by verifying the flashing LED on KGP 4x2209 and then enter the following command to display the USB Device Address:
+        * `ls /dev/serial/by-id`
+        * ![Katapult Active](images/Katapult_Active.png)
     
-46. Using the USB Serial Address found in the Previous Step, Flash Klipper using the command:
-    ```
-    python3 ~/katapult/scripts/flashtool.py -f ~/bin/klipper.bin -d /dev/serial/by-id/{USB ADDRESS FOUND IN PREVIOUS STEP}
-    ```
+    * Using the USB Serial Address found in the Previous Step, Flash Klipper using the command:
+        * `python3 ~/katapult/scripts/flashtool.py -f ~/bin/klipper.bin -d /dev/serial/by-id/{USB ADDRESS FOUND IN PREVIOUS STEP}`
 
-47. Check to see that Klipper was installed using the following command and compare to the expected result:
-    ```
-    ip -s -d link show can0
-    ```
+    * Check to see that Klipper was installed using the following command and compare to the expected result:
+        * `ip -s -d link show can0`
+        * ![Klipper Flashed into KGP 4x2209](images/CAN_Link_Active.png)
 
-![Klipper Flashed into KGP 4x2209](images/CAN_Link_Active.png)
+    * Get the CAN UUID using the following command with the expected result:
+        * `~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0`
+        * ![Klipper CAN Bus UUID](images/CAN_UUID.png)
 
-48. Get the CAN UUID using the following command with the expected result:
-    ```
-    ~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0
-    ```
+    * Create an `mcu.cfg` file using the command:
+        * `printf "[mcu]\ncanbus_uuid: {UUID FOUND IN PREVIOUS STEP}\n" > ~/printer_data/config/mcu.cfg`
 
-![Klipper CAN Bus UUID](images/CAN_UUID.png)
-
-49. Create an `mcu.cfg` file using the command:
-    ```
-    printf "[mcu]\ncanbus_uuid: {UUID FOUND IN PREVIOUS STEP}\n" > ~/printer_data/config/mcu.cfg
-    ```
-
-50. Enter:
+45. Enter:
     ```
     sudo service klipper start
     ```
 
-51. Copy the `printer.cfg` file from this GitHub repository in the `configs` folder into the `http://kgpft1` Mainsail "MACHINE" web page.
+46. Copy the `printer.cfg` file from this GitHub repository in the `configs` folder into the `http://kgpft1` Mainsail "MACHINE" web page.
 
-52. Click on "SAVE AND RESTART` and Klipper should come up with the screen:
+47. Click on "SAVE AND RESTART` and Klipper should come up with the screen:
 
 ![Klipper No CAN](images/Klipper_No_CAN.png)
 
