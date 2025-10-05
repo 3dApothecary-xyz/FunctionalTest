@@ -3,6 +3,7 @@
 # Execute with "curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/ftloadcan1.sh | bash"
 
 expectedNetworkdResponse3="  systemd-networkd.service                                                                                                                       loaded active running   Network Configuration  systemd-networkd.socket                                                                                                                        loaded active running   Network Service Netlink Socket"
+expectedNetworkdResponse4="loaded active running"
 expectedCanrulesResponse='SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"'
 expectedCannetworkResponse="[Match]
 Name=can*
@@ -22,7 +23,10 @@ networkdResponse=$(systemctl | grep systemd-networkd) || true
 cleanedNetworkdResponse=$(echo "$networkdResponse" | tr -dc '[:print:]')
 echo -e "\"$cleanedNetworkdResponse\""
 
-if [[ "$cleanedNetworkdResponse" != "$expectedNetworkdResponse3" ]]; then
+#if [[ "$cleanedNetworkdResponse" != "$expectedNetworkdResponse3" ]]; then
+if echo "$cleanedNetworkdResponse" | grep -q "expectedNetworkdResponse4"; then
+  echo -e "  "
+else
   echo -e "  "
   echo -e "\"systemctl | grep systemd-networkd\" RESPONSE INVALID"
   exit
