@@ -277,7 +277,7 @@
         * `mkdir bin`
         * `cd bin`
         * `wget -O nada.bin https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/bin/nada.bin?raw=true`
-        * `wget -O KGP_4x2209_DFU.bin https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/bin/KGP_4x2209_DFU.bin?raw=true`
+        * `wget -O KGP_4x2209_DFU.bin https://github.com/3dApothecary-xyz/FunctionalTest/blob/main/KGP_4x2209_DFU/KGP_4x2209_DFU.bin?raw=true`
         * `cd ~`
 
     * Load Klipper & Katapult using KIAUH
