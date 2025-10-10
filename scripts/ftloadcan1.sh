@@ -2,8 +2,10 @@
 # Script to simplify Functional Test Micro SD Card setup
 # Execute with "curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/ftloadcan1.sh | bash"
 
-expectedNetworkdResponse3="  systemd-networkd.service                                                                                                                       loaded active running   Network Configuration  systemd-networkd.socket                                                                                                                        loaded active running   Network Service Netlink Socket"
-expectedNetworkdResponse4="active running"
+expectedNetworkd="systemd-networkd.service"
+expectedSocket="systemd-networkd.socket"
+expectedNetworkdResponse5="loaded active"
+expectedNetworkdResponse6="running"
 expectedCanrulesResponse='SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"'
 expectedCannetworkResponse="[Match]
 Name=can*
@@ -20,12 +22,19 @@ sudo systemctl enable systemd-networkd
 sudo systemctl start systemd-networkd
 
 networkdResponse=$(systemctl | grep systemd-networkd) || true
-cleanedNetworkdResponse=$(echo "$networkdResponse" | tr -dc '[:print:]')
-echo -e "\"$cleanedNetworkdResponse\""
 
-#if [[ "$cleanedNetworkdResponse" != "$expectedNetworkdResponse3" ]]; then
-if echo "$cleanedNetworkdResponse" | grep -q "expectedNetworkdResponse4"; then
-  echo -e "  "
+cutnetworkdResponse="${networkdResponse#*${expectedNetworkd}}" 
+cutnetworkdResponse="${cutnetworkdResponse%${expectedSocket}*}" 
+echo -e "\"$cutnetworkdResponse\""
+
+if echo "$cutnetworkdResponse" | grep -q "$expectedNetworkdResponse5"; then
+  if echo "$cutnetworkdResponse" | grep -q "$expectedNetworkdResponse6"; then
+    echo -e "  "
+  else
+    echo -e "  "
+    echo -e "\"systemctl | grep systemd-networkd\" RESPONSE INVALID"
+    exit
+  fi
 else
   echo -e "  "
   echo -e "\"systemctl | grep systemd-networkd\" RESPONSE INVALID"
