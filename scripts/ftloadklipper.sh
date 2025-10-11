@@ -40,7 +40,6 @@ else
 fi
 
 mcuUUID=$(~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0)
-echo -e "\"$mcuUUID\""
 
 mcuUUID="${mcuUUID#*$foundCANBusStart}"
 mcuUUID="${mcuUUID%$foundCANBusEnd*}"
@@ -50,4 +49,4 @@ echo -e "\"$mcuUUID\""
 if [ -e "~/printer_data/config/mcu.cfg" ]; then
   rm ~/printer_data/config/mcu.cfg
 fi
-printf "[mcu]\ncanbus_uuid: mcuUUID\n" > ~/printer_data/config/mcu.cfg
+printf "[mcu]\ncanbus_uuid: $mcuUUID\n" > ~/printer_data/config/mcu.cfg
