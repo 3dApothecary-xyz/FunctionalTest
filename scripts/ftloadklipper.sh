@@ -5,6 +5,8 @@
 expectedSerialDevResponse="usb-katapult_stm32g0b1xx_"
 expectedCanLinkShowTopLine="can0: <NOARP,ECHO> mtu 16 qdisc noop state DOWN mode DEFAULT group default qlen 128"
 expectedCANLinkShowBitrate="bitrate 1000000 sample-point 0.750"
+foundCANBusStart="Found canbus_uuid="
+foundCANBusEnd=","
 
 serialDevResponse=$(ls /dev/serial/by-id)
 echo -e "\"$serialDevResponse\""
@@ -38,3 +40,12 @@ else
 fi
 
 mcuUUID=$(~/klippy-env/bin/python ~/klipper/scripts/canbus_query.py can0)
+echo -e "\"$mcuUUID\""
+
+mcuUUID="${mcuUUID#*$foundCANBusStart}"
+mcuUUID="${mcuUUID%$foundCANBusEnd*}"
+echo -e " "
+echo -e "\"$mcuUUID\""
+
+rm ~/printer_data/config/mcu.cfg
+printf "[mcu]\ncanbus_uuid: mcuUUID\n" > ~/printer_data/config/mcu.cfg
