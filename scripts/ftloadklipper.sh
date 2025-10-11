@@ -3,7 +3,7 @@
 # Execute with "curl -s https://raw.githubusercontent.com/3dApothecary-xyz/FunctionalTest/refs/heads/main/scripts/ftloadklipper.sh | bash"
 
 expectedSerialDevResponse="usb-katapult_stm32g0b1xx_"
-expectedCanLinkShowTopLine="DEFAULT group default qlen 128"
+expectedCanLinkShowTopLine="default qlen 128"
 expectedCANLinkShowBitrate="bitrate 1000000 sample-point 0.750"
 foundCANBusStart="Found canbus_uuid="
 foundCANBusEnd=","
