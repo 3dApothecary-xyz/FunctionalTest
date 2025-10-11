@@ -47,5 +47,7 @@ mcuUUID="${mcuUUID%$foundCANBusEnd*}"
 echo -e " "
 echo -e "\"$mcuUUID\""
 
-rm ~/printer_data/config/mcu.cfg
+if [ -e "~/printer_data/config/mcu.cfg" ]; then
+  rm ~/printer_data/config/mcu.cfg
+fi
 printf "[mcu]\ncanbus_uuid: mcuUUID\n" > ~/printer_data/config/mcu.cfg
