@@ -6,13 +6,12 @@ expectedNetworkd="systemd-networkd.service"
 expectedSocket="systemd-networkd.socket"
 expectedNetworkdResponse5="loaded active"
 expectedNetworkdResponse6="running"
-expectedCanrulesResponse='SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"'
-expectedCannetworkResponse="[Match]
+canRules='SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"'
+canNetwork="[Match]
 Name=can*
 
 [CAN]
 BitRate=1M
-RestartSec=0.1s
 
 [Link]
 RequiredForOnline=no"
@@ -43,24 +42,28 @@ fi
 
 sudo systemctl disable systemd-networkd-wait-online.service
 
-echo -e 'SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"' | sudo tee /etc/udev/rules.d/10-can.rules > /dev/null
+#echo -e 'SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"' | sudo tee /etc/udev/rules.d/10-can.rules > /dev/null
+echo -e "$canRules"  | sudo tee /etc/udev/rules.d/10-can.rules > /dev/null
 
 canrulesResponse=$(cat /etc/udev/rules.d/10-can.rules)
 echo -e "\"$canrulesResponse\""
 
-if [[ "$canrulesResponse" != "$expectedCanrulesResponse" ]]; then
+#if [[ "$canrulesResponse" != "$expectedCanrulesResponse" ]]; then
+if [[ "$canrulesResponse" != "$canRules" ]]; then
   echo -e "  "
   echo -e "cat 10-can.rules VERSION INVALID"
   exit
 fi
 
 #echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\nRestartSec=0.1s\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null
-echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null
+#echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null
+echo -e "$canNetwork" | sudo tee /etc/systemd/network/25-can.network > /dev/null
 
 cannetworkResponse=$(cat /etc/systemd/network/25-can.network)
 echo -e "\"$cannetworkResponse\""
 
-if [[ "$cannetworkResponse" != "$expectedCannetworkResponse" ]]; then
+#if [[ "$cannetworkResponse" != "$expectedCannetworkResponse" ]]; then
+if [[ "$cannetworkResponse" != "$canNetwork" ]]; then
   echo -e "  "
   echo -e "cat 25-can.network VERSION INVALID"
   exit
