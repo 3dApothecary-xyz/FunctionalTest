@@ -54,7 +54,8 @@ if [[ "$canrulesResponse" != "$expectedCanrulesResponse" ]]; then
   exit
 fi
 
-echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\nRestartSec=0.1s\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null
+#echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\nRestartSec=0.1s\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null
+echo -e "[Match]\nName=can*\n\n[CAN]\nBitRate=1M\n\n[Link]\nRequiredForOnline=no" | sudo tee /etc/systemd/network/25-can.network > /dev/null
 
 cannetworkResponse=$(cat /etc/systemd/network/25-can.network)
 echo -e "\"$cannetworkResponse\""
