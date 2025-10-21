@@ -59,7 +59,6 @@ ftVersion() {
              # Updated Firmware Load and eliminted the "enableDFU.py" operations
   ver="0.16" # Going through changes for HeaterBoardb
              # Changed Polarity of fan0complo in VIN Test
-             # Changed Polarity of htr#complo/htr#comphi in HeaterTest
   echo "$ver"
 }
 
@@ -1590,8 +1589,10 @@ if [[ 0 != $doFanCheck ]] && [[ 0 != $doHeaterCheck ]]; then
     RESPONSE_LO=$(python ~/python/gpioread.py ${fancomplo[$fan]}) || true
     RESPONSE_HI=$(python ~/python/gpioread.py ${fancomphi[$fan]}) || true
 
-    if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
-      if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
+#    if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
+    if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then  #  Polarity Changed for ver="0.16"
+#      if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
+      if echo "$RESPONSE_HI" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
         echo -ne "SETFAN NUMBER=$fan VALUE=1\n" > "$TTY" || true  
         sleep 0.5
         RESPONSE_LO=$(python ~/python/gpioread.py ${fancomplo[$fan]}) || true
@@ -1612,13 +1613,17 @@ if [[ 0 != $doFanCheck ]] && [[ 0 != $doHeaterCheck ]]; then
           echoE "TEST$testNumString: Fan$fan Probe LED Active"
           echoE " "
 
-          if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then
-            if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
+#          if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then  
+          if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
+#            if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then  
+            if echo "$RESPONSE_HI" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
               RESPONSE_LO=$(python ~/python/gpioread.py ${fancomplo[$fan]}) || true
               RESPONSE_HI=$(python ~/python/gpioread.py ${fancomphi[$fan]}) || true
 
-              if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
-                if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
+#              if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
+              if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then  #  Polarity Changed for ver="0.16"
+#                if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
+                if echo "$RESPONSE_HI" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
                   sleep 0.1
                 else
                   drawError "TEST$testNumString: Fan$fan High Comparator Reset Output Test" "Fan$fan High Comparator NOT in Correct Reset State"
