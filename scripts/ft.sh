@@ -57,6 +57,9 @@ ftVersion() {
              # Added Check for Klipper Running if Klippler Firmware is not loaded
              # Updated "FLS:" Numbering to better watch Flash Update Operations
              # Updated Firmware Load and eliminted the "enableDFU.py" operations
+  ver="0.16" # Going through changes for HeaterBoardb
+             # Changed Polarity of fan0complo in VIN Test
+             # Changed Polarity of htr#complo/htr#comphi in HeaterTest
   echo "$ver"
 }
 
@@ -66,7 +69,7 @@ ftVersion() {
 
 # Test Enable/Operation Variables 
 doLEDCheck=0                        # Setting to Zero Disables the Manual LED Check
-doFirmwareLoad=1
+doFirmwareLoad=0
 doToolheadTemperatureCheck=1
 doThermoTemperatureCheck=1
 doDSensorCheck=1
@@ -74,9 +77,9 @@ doNeoPixelCheck=1
 doIndStopCheck=1
 doBLTouchCheck=1
 doSPICheck=1
-doHeaterCheck=0                     # Setting to Zero Also Disables the VIN Check & Fan Check
-doFanCheck=0
-doStepperCheck=0
+doHeaterCheck=1                     # Setting to Zero Also Disables the VIN Check & Fan Check
+doFanCheck=1
+doStepperCheck=1
 sealingFlag=0
 readDlay=0.4
 
@@ -689,7 +692,8 @@ if [[ 0 != $doHeaterCheck ]]; then
 
   RESPONSE=$(python ~/python/gpioread.py $fan0complo) || true
 
-  if echo "$RESPONSE" | grep -q "Pin State is low"; then
+#  if echo "$RESPONSE" | grep -q "Pin State is low"; then 
+  if echo "$RESPONSE" | grep -q "Pin State is HIGH"; then # Test Polarity Reversed for ver="0.16"
     echoE   "TEST$testNumString: VIN Connection Test Complete"
   else
     echoE " "
@@ -1500,8 +1504,10 @@ if [[ 0 != $doHeaterCheck ]]; then
     RESPONSE_LO=$(python ~/python/gpioread.py ${htrcomplo[$htr]}) || true
     RESPONSE_HI=$(python ~/python/gpioread.py ${htrcomphi[$htr]}) || true
 
-    if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
-      if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
+#    if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
+    if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then  #  Polarity Changed for ver="0.16"
+#      if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
+      if echo "$RESPONSE_HI" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
         echo -ne "SETHEATER NUMBER=$htr VALUE=1\n" > "$TTY" || true  
         sleep 0.5
         RESPONSE_LO=$(python ~/python/gpioread.py ${htrcomplo[$htr]}) || true
@@ -1522,13 +1528,17 @@ if [[ 0 != $doHeaterCheck ]]; then
           echoE "TEST$testNumString: Heater$htr Probe LED Active"
           echoE " "
 
-          if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then
-            if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
+#          if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then
+          if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
+#            if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
+            if echo "$RESPONSE_HI" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
               RESPONSE_LO=$(python ~/python/gpioread.py ${htrcomplo[$htr]}) || true
               RESPONSE_HI=$(python ~/python/gpioread.py ${htrcomphi[$htr]}) || true
 
-              if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
-                if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
+#              if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
+              if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then  #  Polarity Changed for ver="0.16"
+#                if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
+                if echo "$RESPONSE_HI" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
                   sleep 0.1
                 else
                   drawError "TEST$testNumString: Heater$htr High Comparator Reset Output Test" "Heater$htr High Comparator NOT in Correct Reset State"
