@@ -59,6 +59,10 @@ ftVersion() {
              # Updated Firmware Load and eliminted the "enableDFU.py" operations
   ver="0.16" # Going through changes for HeaterBoardb
              # Changed Polarity of fan0complo in VIN Test
+             # Changed Polarity of htr#complo/htr#compi/fan#complo/fan#comphi in Functional Tests
+  ver="0.17" # Removed Commented Out Test Code
+             # Put Ping Host and Response to Variables rather than hardcoded
+             # Verified that Heater/Fan/DSensor/etc. are turned off if there is an (LED) error
   echo "$ver"
 }
 
@@ -67,8 +71,8 @@ ftVersion() {
 # (C) Copyright 2025 for File Contents and Data Formatting
 
 # Test Enable/Operation Variables 
-doLEDCheck=0                        # Setting to Zero Disables the Manual LED Check
-doFirmwareLoad=0
+doLEDCheck=1                        # Setting to Zero Disables the Manual LED Check
+doFirmwareLoad=1
 doToolheadTemperatureCheck=1
 doThermoTemperatureCheck=1
 doDSensorCheck=1
@@ -81,6 +85,8 @@ doFanCheck=1
 doStepperCheck=1
 sealingFlag=0
 readDlay=0.4
+pingHost="klipper.discourse.group"
+pingHostResponse="klipper.hosted"
 
 
 
@@ -279,8 +285,6 @@ echoE() {
 drawHeader() {
 headerName="$1"
 
-#                        111111111122222222223333333333444444444455555555556666666666
-#              0123456789012345678901234567890123456789012345678901234567890123456789 
   echo -e "$outline$PHULLSTRING"
   version=$(ftVersion) 
   headerLength=${#headerName}
@@ -668,9 +672,9 @@ echo -e  "$outline$PHULLSTRING"
 doAppend "!TEST$testNumString: Ping"
 logFileImage="$logFileImage\nTEST$testNumString: Ping"
 
-pingRESPONSE=$(ping -c 2 klipper.discourse.group)
+pingRESPONSE=$(ping -c 2 $pingHost)
 
-if echo "$pingRESPONSE" | grep -q "klipper.hosted"; then
+if echo "$pingRESPONSE" | grep -q "$pingHostResponse"; then
   echoE   "TEST$testNumString: Ping Test Complete"
 else
   echoE " "
@@ -691,7 +695,6 @@ if [[ 0 != $doHeaterCheck ]]; then
 
   RESPONSE=$(python ~/python/gpioread.py $fan0complo) || true
 
-#  if echo "$RESPONSE" | grep -q "Pin State is low"; then 
   if echo "$RESPONSE" | grep -q "Pin State is HIGH"; then # Test Polarity Reversed for ver="0.16"
     echoE   "TEST$testNumString: VIN Connection Test Complete"
   else
@@ -720,52 +723,16 @@ if [[ 0 != $doFirmwareLoad ]]; then
   echoE " "
 
   if echo "$lsusbResponse" | grep -q "0483:df11"; then
-#-    loadKatapult=1
-    DFU_response=$(sudo dfu-util -a 0 -D ~/bin/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11) || true  #+
+    DFU_response=$(sudo dfu-util -a 0 -D ~/bin/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11) || true  
 
-    echoE " "                                                                                                                        #+
-    echoE "FLS:02"                                                                                                                   #+
-    echoE "$DFU_response"                                                                                                            #+
-#-  else
-#-    python ~/python/enableKatapult.py
+    echoE " "                                                                                                                        
+    echoE "FLS:02"                                                                                                                   
+    echoE "$DFU_response"                                                                                                            
   
     sleep 1
-#-  
-#-    katapultResponse=$(ls /dev/serial/by-id) || true
-#-
-#-    echoE "FLS:02"
-#-    echoE "$katapultResponse"
-#-    echoE " "
 
-#-    if echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_"; then
-#-      loadKatapult=0
-#-    else
-#-      python ~/python/enableDFU.py
-#-  
-#-      sleep 1
-#-        
-#-      lsusbResponse=$(lsusb) || true
-#-
-#-      echoE "FLS:03"
-#-      echoE "$lsusbResponse"
-#-      echoE " "
-#-
-#-      if echo "$lsusbResponse" | grep -q "0483:df11"; then
-#-        loadKatapult=1
-#-      else
-#-        drawError "Loading Firmware" "Unable to Activate DFU Mode or Katapult"
-#-      fi
-#-    fi
   fi
 
-#-  if [ 0 -ne $loadKatapult ]; then  
-#-    DFU_response=$(sudo dfu-util -a 0 -D ~/bin/katapult.bin --dfuse-address 0x08000000:force:mass-erase:leave -d 0483:df11) || true
-
-#-    echoE " "
-#-    echoE "FLS:04"
-#-    echoE "$DFU_response"
-
-#-    sleep 1
     
   python ~/python/enableKatapult.py
   
@@ -779,10 +746,7 @@ if [[ 0 != $doFirmwareLoad ]]; then
   echoE " "
 
   if [! echo "$katapultResponse" | grep -q "usb-katapult_stm32g0b1xx_" ]; then
-#-      loadKatapult=1
-#-    else
     drawError "Loading Firmware" "Error with Katapult Loading"
-#-    fi
   fi
 
   python3 ~/katapult/scripts/flashtool.py -f ~/bin/KGP_4x2209_DFU.bin -d /dev/serial/by-id/$katapultResponse
@@ -866,8 +830,6 @@ if [[ 0 != $doFirmwareLoad ]]; then
   echoE " "
 
   if [! echo "$dfuResponse" | grep -q "usb-katapult_stm32g0b1xx_" ]; then
-#-    loadKatapult=1
-#-  else
     drawError "Loading Firmware" "Unable to Restart Katapult after KGP_4x2209_DFU.bin Load"
   fi
 
@@ -1503,9 +1465,7 @@ if [[ 0 != $doHeaterCheck ]]; then
     RESPONSE_LO=$(python ~/python/gpioread.py ${htrcomplo[$htr]}) || true
     RESPONSE_HI=$(python ~/python/gpioread.py ${htrcomphi[$htr]}) || true
 
-#    if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
     if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then  #  Polarity Changed for ver="0.16"
-#      if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
       if echo "$RESPONSE_HI" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
         echo -ne "SETHEATER NUMBER=$htr VALUE=1\n" > "$TTY" || true  
         sleep 0.5
@@ -1527,16 +1487,12 @@ if [[ 0 != $doHeaterCheck ]]; then
           echoE "TEST$testNumString: Heater$htr Probe LED Active"
           echoE " "
 
-#          if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then
           if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
-#            if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
             if echo "$RESPONSE_HI" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
               RESPONSE_LO=$(python ~/python/gpioread.py ${htrcomplo[$htr]}) || true
               RESPONSE_HI=$(python ~/python/gpioread.py ${htrcomphi[$htr]}) || true
 
-#              if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
               if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then  #  Polarity Changed for ver="0.16"
-#                if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
                 if echo "$RESPONSE_HI" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
                   sleep 0.1
                 else
@@ -1589,9 +1545,7 @@ if [[ 0 != $doFanCheck ]] && [[ 0 != $doHeaterCheck ]]; then
     RESPONSE_LO=$(python ~/python/gpioread.py ${fancomplo[$fan]}) || true
     RESPONSE_HI=$(python ~/python/gpioread.py ${fancomphi[$fan]}) || true
 
-#    if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
     if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then  #  Polarity Changed for ver="0.16"
-#      if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
       if echo "$RESPONSE_HI" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
         echo -ne "SETFAN NUMBER=$fan VALUE=1\n" > "$TTY" || true  
         sleep 0.5
@@ -1613,16 +1567,12 @@ if [[ 0 != $doFanCheck ]] && [[ 0 != $doHeaterCheck ]]; then
           echoE "TEST$testNumString: Fan$fan Probe LED Active"
           echoE " "
 
-#          if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then  
           if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
-#            if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then  
             if echo "$RESPONSE_HI" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
               RESPONSE_LO=$(python ~/python/gpioread.py ${fancomplo[$fan]}) || true
               RESPONSE_HI=$(python ~/python/gpioread.py ${fancomphi[$fan]}) || true
 
-#              if echo "$RESPONSE_LO" | grep -q "Pin State is low"; then
               if echo "$RESPONSE_LO" | grep -q "Pin State is HIGH"; then  #  Polarity Changed for ver="0.16"
-#                if echo "$RESPONSE_HI" | grep -q "Pin State is HIGH"; then
                 if echo "$RESPONSE_HI" | grep -q "Pin State is low"; then  #  Polarity Changed for ver="0.16"
                   sleep 0.1
                 else
