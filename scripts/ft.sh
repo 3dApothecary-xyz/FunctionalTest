@@ -63,6 +63,9 @@ ftVersion() {
   ver="0.17" # Removed Commented Out Test Code
              # Put Ping Host and Response to Variables rather than hardcoded
              # Verified that Heater/Fan/DSensor/etc. are turned off if there is an (LED) error
+             # Added Timeout value for LEDCheck methods
+             # - Timeout is 20s for heaters and fans
+             # - Timeout is 12 hours for all other checks
   echo "$ver"
 }
 
@@ -428,6 +431,7 @@ checkLED() {
 
   testNumber="$1"
   promptMsg=""
+  timeoutValue=43200  # 12 Hours
   if [[ "Power" == "$2" ]]; then
     powerLED="$WHITE"
     powerBlock="$LIGHTCYAN"
@@ -502,6 +506,7 @@ checkLED() {
     heater0LED="$WHITE"
     heater0CONN="$RED"
     promptMsg="Confirm Red HEATER0 LED Flashing"
+    timeoutValue=20
   else
     heater0LED="$DARKGRAY"
     heater0CONN="$DARKGRAY"
@@ -511,6 +516,7 @@ checkLED() {
     heater1LED="$WHITE"
     heater1CONN="$RED"
     promptMsg="Confirm Red HEATER1 LED Flashing"
+    timeoutValue=20
   else
     heater1LED="$DARKGRAY"
     heater1CONN="$DARKGRAY"
@@ -520,6 +526,7 @@ checkLED() {
     fan0LED="$WHITE"
     fan0CONN="$BLUE"
     promptMsg="Confirm Blue FAN0 LED and LED Strip Lit"
+    timeoutValue=20
   else
     fan0LED="$DARKGRAY"
     fan0CONN="$DARKGRAY"
@@ -529,6 +536,7 @@ checkLED() {
     fan1LED="$WHITE"
     fan1CONN="$BLUE"
     promptMsg="Confirm Blue FAN1 LED and LED Strip Lit"
+    timeoutValue=20
   else
     fan1LED="$DARKGRAY"
     fan1CONN="$DARKGRAY"
@@ -538,6 +546,7 @@ checkLED() {
     fan2LED="$WHITE"
     fan2CONN="$BLUE"
     promptMsg="Confirm Blue FAN2 LED and LED Strip Lit"
+    timeoutValue=20
   else
     fan2LED="$DARKGRAY"
     fan2CONN="$DARKGRAY"
@@ -547,6 +556,7 @@ checkLED() {
     fan3LED="$WHITE"
     fan3CONN="$BLUE"
     promptMsg="Confirm Blue FAN3 LED and LED Strip Lit"
+    timeoutValue=20
   else
     fan3LED="$DARKGRAY"
     fan3CONN="$DARKGRAY"
@@ -600,35 +610,43 @@ $PHULLSTRING
 ##$DARKGRAY                                                                      $outline##
 $PHULLSTRING$BASE" >&2
   
-echo -e -n "LED Behaving as Expected? (Y/N): " >&2
-stty_original=$(stty -g)
-stty raw -echo
-response=""
-while IFS= read -rsn1 character; do
-  if [[ "$character" == $'\x08' || "$character" == $'\x7f' ]]; then
-    if [[ -n "$response" ]]; then
-      response=""
-      echo -e -n "\b \b" >&2
-    fi
-  elif [[ "$character" == "" && -n "$response" ]]; then # Enter key
-    break
-  elif [[ "$character" == "y" || "$character" == "Y" ]]; then 
-    if [[ -z "$response" ]]; then
-      response="Y"
-      echo -e -n "Y" >&2
-    fi
-  elif [[ "$character" == "n" || "$character" == "N" ]]; then 
-    if [[ -z "$response" ]]; then
-      response="N"
-      echo -e -n "N" >&2
-    fi
-  fi
-done
+  echo -e -n "LED Behaving as Expected? (Y/N): " >&2
+  stty_original=$(stty -g)
+  stty raw -echo
+  response=""
+  breakValue="1"
+  while [[ "1" == "$breakValue" ]]; do
+    read -rsn1 -t $timeoutValue character
+    readResponse=$?
 
-# Restore original terminal settings
-stty "$stty_original"
+    if [ $readResponse -ne 0 ]; then # Timeout
+      response="T"
+      breakValue="0"
+    fi
 
-echo "$response"
+    if [[ "$character" == $'\x08' || "$character" == $'\x7f' ]]; then
+      if [[ -n "$response" ]]; then
+        response=""
+        echo -e -n "\b \b" >&2
+      fi
+    elif [[ "$character" == "" && -n "$response" ]]; then # Enter key
+      breakValue="0"
+    elif [[ "$character" == "y" || "$character" == "Y" ]]; then 
+      if [[ -z "$response" ]]; then
+        response="Y"
+        echo -e -n "Y" >&2
+      fi
+    elif [[ "$character" == "n" || "$character" == "N" ]]; then 
+      if [[ -z "$response" ]]; then
+        response="N"
+        echo -e -n "N" >&2
+      fi
+    fi
+  done
+
+  stty "$stty_original"  # Restore original terminal settings
+
+  echo "$response"
   
 }
 
@@ -768,7 +786,10 @@ if [[ 0 != $doLEDCheck ]]; then
   echoE " "
   Yn=$(checkLED "$testNumString" "Power")
 
-  if [[ "Y" == "$Yn" ]]; then
+  if [[ "T" == "$Yn" ]]; then
+    echoE " "
+    drawError "TEST$testNumString: Power LED Active Check" "Input Timeout"
+  elif [[ "Y" == "$Yn" ]]; then
     echoE " "
     echoE   "TEST$testNumString: Power LED Active"
     echoE " "
@@ -786,9 +807,12 @@ if [[ 0 != $doLEDCheck ]]; then
   echoE " "
   Yn=$(checkLED "$testNumString" "Katapult")
 
-  if [[ "Y" == "$Yn" ]]; then
+  if [[ "T" == "$Yn" ]]; then
     echoE " "
-    echoE   "TEST$testNumString: DFU LED Flashing"
+    drawError "TEST$testNumString: DFU LED Flashing" "Input Timeout"
+  elif [[ "Y" == "$Yn" ]]; then
+    echoE " "
+    echoE   "TEST$testNumString: "
     echoE " "
   else
     echoE " "
@@ -804,7 +828,10 @@ if [[ 0 != $doLEDCheck ]]; then
   echoE " "
   Yn=$(checkLED "$testNumString" "BOOT0")
 
-  if [[ "Y" == "$Yn" ]]; then
+  if [[ "T" == "$Yn" ]]; then
+    echoE " "
+    drawError "TEST$testNumString: STATUS LED Operation Check" "Input Timeout"
+  elif [[ "Y" == "$Yn" ]]; then
     echoE " "
     echoE   "TEST$testNumString: STATUS LED & Button Operating Normally"
     echoE " "
@@ -1179,7 +1206,10 @@ if [[ 0 != $doDSensorCheck ]]; then
         Yn="Y"
       fi
 
-      if [[ "Y" == "$Yn" ]]; then
+      if [[ "T" == "$Yn" ]]; then
+        echoE " "
+        drawError "TEST$testNumString: $dSensorpin LED Active Check" "Input Timeout"
+      elif [[ "Y" == "$Yn" ]]; then
         echoE   "TEST$testNumString: $dSensorpin LED Active"
         echoE " "
 
@@ -1282,7 +1312,10 @@ if [[ 0 != $doIndStopCheck ]]; then
       Yn="Y"
     fi
 
-    if [[ "Y" == "$Yn" ]]; then
+    if [[ "T" == "$Yn" ]]; then
+      echoE " "
+      drawError "TEST$testNumString: Inductive Sensor LED Active Check" "Input Timeout"
+    elif [[ "Y" == "$Yn" ]]; then
       echoE " "
       echoE   "TEST$testNumString: Inductive Sensor LED Active"
       echoE " "
@@ -1372,7 +1405,10 @@ if [[ 0 != $doBLTouchCheck ]]; then
       Yn="Y"
     fi
 
-    if [[ "Y" == "$Yn" ]]; then
+    if [[ "T" == "$Yn" ]]; then
+      echoE " "
+      drawError "TEST$testNumString:  BLTouch Probe LED Active Check" "Input Timeout"
+    elif [[ "Y" == "$Yn" ]]; then
       echoE " "
       echoE   "TEST$testNumString: BLTouch Probe LED Active"
       echoE " "
@@ -1483,7 +1519,10 @@ if [[ 0 != $doHeaterCheck ]]; then
         echo -ne "SETHEATER NUMBER=$htr VALUE=0\n" > "$TTY" || true
         sleep 0.5
 
-        if [[ "Y" == "$Yn" ]]; then
+        if [[ "T" == "$Yn" ]]; then
+          echoE " "
+          drawError "TEST$testNumString:  Heater$htr LED Active Check" "Input Timeout"
+        elif [[ "Y" == "$Yn" ]]; then
           echoE "TEST$testNumString: Heater$htr Probe LED Active"
           echoE " "
 
@@ -1563,7 +1602,10 @@ if [[ 0 != $doFanCheck ]] && [[ 0 != $doHeaterCheck ]]; then
         echo -ne "SETFAN NUMBER=$fan VALUE=0\n" > "$TTY" || true
         sleep 0.5
 
-        if [[ "Y" == "$Yn" ]]; then
+        if [[ "T" == "$Yn" ]]; then
+          echoE " "
+          drawError "TEST$testNumString:   Fan$fan LED Active Check" "Input Timeout"
+        elif [[ "Y" == "$Yn" ]]; then
           echoE "TEST$testNumString: Fan$fan Probe LED Active"
           echoE " "
 
