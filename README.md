@@ -9,6 +9,7 @@
 * Manufacturer Supplied: 1920 x 1080p "HDMI Monitor"
 * Manufacturer Supplied: Full Sized HDMI Cable (for Board Under Test to HDMI Monitor)
 * Manufacturer supplied: Ethernet Cable with RJ45 Connector to Active Internet Connection
+* Company Supplied: Known Good KBP 4x2209
 * Company Supplied: USB Keyboard (US Key Layout)
 * Company Supplied: [Raspberry Pi CM4 (CM4101000)](https://datasheets.raspberrypi.com/cm4/cm4-product-brief.pdf)
 * Company Supplied: Micro SD Card 64GB or larger Imaged with test software using the process outlined below
