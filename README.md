@@ -10,29 +10,13 @@
 * Manufacturer Supplied: Full Sized HDMI Cable (for Board Under Test to HDMI Monitor)
 * Manufacturer supplied: Ethernet Cable with RJ45 Connector to Active Internet Connection
 * Company Supplied: USB Keyboard (US Key Layout)
-* Company Supplied: Silicon Solder Pad with Test Apparatus Markings and Parts
 * Company Supplied: [Raspberry Pi CM4 (CM4101000)](https://datasheets.raspberrypi.com/cm4/cm4-product-brief.pdf)
-* Company Supplied: Micro SD Card 64GB or larger
+* Company Supplied: Micro SD Card 64GB or larger Imaged with test software using the process outlined below
 * Company Supplied: Red/Black Power Wiring from Bench Power Supply to Board Under Test
-* Company Supplied: ["NewHat2" Raspberry Pi GPIO Hat](https://github.com/3dApothecary-xyz/NewHat2)
-* Company Supplied: 6 Pin Ribbon Cable from NewHat2 to Board Under Test
-* Company Supplied: Red JST XH 3 Pin to Dupont 3 Pin Socket Wire
-* Company Supplied: Black JST XH 3 Pin to Dupont 3 Pin Socket Wire
-* Company Supplied: Yellow JST XH 3 Pin to Dupont 3 Pin Socket Wire
-* Company Supplied: Blue JST XH 3 Pin to Dupont 3 Pin Socket Wire
-* Company Supplied: Green JST XH 3 Pin to Dupont 3 Pin Socket Wire
-* Company Supplied: 4x 15cm long 24V LED Strip Lighting on 2 Pin Dupont Connector
-* Company Supplied: 2x 8 NeoPixel LED strips on 3 Pin Dupont Connector
-* Company Supplied: ADXL345 Prototype Board with 8 Pin Header 
-* Company Supplied: 6Pin Ribbon Cable with 8 Pin Dupont Connector and 6 Pin Dupont Connector
-* Company Supplied: BTT EBB42 Toolhead Controller
-* Company Supplied: CANBus Cable to Connect Board Under Test to BTT EBB42 Toolhead Controller
-* Company Supplied: [Antclabs "BLTouch" v3.1 Sensor](https://www.antclabs.com/bltouch-v3) Mounted to "BLTouch" Stepper Motor Base
-* Company Supplied: "BLTouch" Custom Stepper Motor Base with Striker Mount on Stepper Motor
-* Company Supplied: 12V+ Inductive Probe Mounted to Stepper Motor Base
-* Company Supplied: 12V+ Inductive Probe Custom Stepper Motor Base with Striker on Stepper Motor
-* Company Supplied: 2x Custom Motor Base with Striker
-* Company Supplied: 4x Lerdge NEMA 17 42mm Motors with Dupont Connectors
+* Company Supplied: NewHat3b Raspberry Pi GPIO Functional Test Hat and cables
+* Company Supplied: HeaterBoardb Functional Test PCB and cables
+* Company Supplied: BTT EBB42 Toolhead Controller with cable
+* Company Supplied: 4x Lerdge NEMA 17 42mm Motors with Fuctional Test base and striker with cables
 
 ## NewHat3b/HeaterBoardb Functions SBC 40 Pin Header Connections
 
