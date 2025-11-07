@@ -66,6 +66,8 @@ ftVersion() {
              # Added Timeout value for LEDCheck methods
              # - Timeout is 20s for heaters and fans
              # - Timeout is 12 hours for all other checks
+  ver="0.18" # Changed Ping host to "www.baidu.com" and response to "103.235.46.102"
+             # Removed "LED Strip" reference in checkLED
   echo "$ver"
 }
 
@@ -88,8 +90,8 @@ doFanCheck=1
 doStepperCheck=1
 sealingFlag=0
 readDlay=0.4
-pingHost="klipper.discourse.group"
-pingHostResponse="klipper.hosted"
+pingHost="www.baidu.com"
+pingHostResponse="103.235.46.102"
 
 
 
@@ -525,7 +527,7 @@ checkLED() {
     fan0LED="$LIGHTBLUE"
     fan0LED="$WHITE"
     fan0CONN="$BLUE"
-    promptMsg="Confirm Blue FAN0 LED and LED Strip Lit"
+    promptMsg="Confirm Blue FAN0 LED Lit"
     timeoutValue=20
   else
     fan0LED="$DARKGRAY"
@@ -535,7 +537,7 @@ checkLED() {
     fan1LED="$LIGHTBLUE"
     fan1LED="$WHITE"
     fan1CONN="$BLUE"
-    promptMsg="Confirm Blue FAN1 LED and LED Strip Lit"
+    promptMsg="Confirm Blue FAN1 LED Lit"
     timeoutValue=20
   else
     fan1LED="$DARKGRAY"
@@ -545,7 +547,7 @@ checkLED() {
     fan2LED="$LIGHTBLUE"
     fan2LED="$WHITE"
     fan2CONN="$BLUE"
-    promptMsg="Confirm Blue FAN2 LED and LED Strip Lit"
+    promptMsg="Confirm Blue FAN2 LED Lit"
     timeoutValue=20
   else
     fan2LED="$DARKGRAY"
@@ -555,7 +557,7 @@ checkLED() {
     fan3LED="$LIGHTBLUE"
     fan3LED="$WHITE"
     fan3CONN="$BLUE"
-    promptMsg="Confirm Blue FAN3 LED and LED Strip Lit"
+    promptMsg="Confirm Blue FAN3 LED Lit"
     timeoutValue=20
   else
     fan3LED="$DARKGRAY"
