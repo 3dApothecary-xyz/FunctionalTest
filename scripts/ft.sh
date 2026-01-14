@@ -68,6 +68,12 @@ ftVersion() {
              # - Timeout is 12 hours for all other checks
   ver="0.18" # Changed Ping host to "www.baidu.com" and response to "103.235.46.102"
              # Removed "LED Strip" reference in checkLED
+  ver="0.19" # Removed "Confirm Orange LED Flashing" check if "doFirmwareLoad" == 0
+             # Changed prompt: "Confirm Red HEATER0 LED Flashing" to "Confirm Red HEATER0 LED Lit"
+             # Added Enable/Operation Variable Print to display and log
+             # Added Serial Number Entry (and format check) in the format:
+             #  KGP 4x2209-YYWW####
+             # Changed Log File Name Format to "KGP 4x2209-YYWW####_YY-MM-DD-HH-MM-SS-PASS/FAIL"
   echo "$ver"
 }
 
@@ -91,6 +97,7 @@ doStepperCheck=1
 sealingFlag=1
 readDlay=0.4
 pingHost="www.baidu.com"
+#pingHostResponse="103.235.46.115"
 pingHostResponse="103.235.46.102"
 
 
@@ -425,7 +432,9 @@ $PHULLSTRING"
 
   echo -e "$PHULLSTRING$BASE"
 
-  echo -e "$logFileImage" > ~/logs/$logFileName
+  failString="-FAIL"
+  logFileName="$logFileName$failString"
+  echo -e "$logFileImage" >> ~/logs/$logFileName
   
   exit
 }
@@ -507,7 +516,7 @@ checkLED() {
     heater0LED="$LIGHTRED"
     heater0LED="$WHITE"
     heater0CONN="$RED"
-    promptMsg="Confirm Red HEATER0 LED Flashing"
+    promptMsg="Confirm Red HEATER0 LED Lit"
     timeoutValue=20
   else
     heater0LED="$DARKGRAY"
@@ -517,7 +526,7 @@ checkLED() {
     heater1LED="$LIGHTRED"
     heater1LED="$WHITE"
     heater1CONN="$RED"
-    promptMsg="Confirm Red HEATER1 LED Flashing"
+    promptMsg="Confirm Red HEATER1 LED Lit"
     timeoutValue=20
   else
     heater1LED="$DARKGRAY"
@@ -663,23 +672,87 @@ if [[ 0 != $doFirmwareLoad ]]; then
   sudo service klipper stop
 fi
 
-currentDateTime=$(date -u "+%F-%H-%M-%S")
-
-logsDirContents=$(ls ~/logs -l)
-mapfile -t logsDirContentsArray <<< "$logsDirContents"
-nextLogsNumber=${#logsDirContentsArray[@]}
-logsNumber="0${nextLogsNumber}"
-while [ 5 -gt ${#logsNumber} ]; do
-  logsNumber="0$logsNumber"
-done
-logFileName="LOG$logsNumber-$currentDateTime.log"
+logFileName="Scan Board Under Test Serial Number"
 
 clearScreen
 drawSplashScreen
 
 
-testNum=0
+########################################################################
+# Display Prompt for Serial Number and Verify Format
+########################################################################
 
+echoE " "
+logFileImage="KGP 4x2209 Serial Number: "
+
+serialNumberTemplate="KGP 4x2209-YYWW####"
+serialNumberStart="KGP 4x2209-"
+
+loopFlag=1
+while [[ 0 != $loopFlag ]]; do
+  loopFlag=0
+  invalidSerialNumberFlag=0
+  read -rp "Scan KGP 4x2209 Serial Number: " serialNumber
+  
+  if [[ "${#serialNumber}" != "${#serialNumberTemplate}" ]]; then
+    loopFlag=1
+    invalidSerialNumberFlag=1
+  elif [[ "$serialNumber" != "$serialNumberStart"* ]]; then
+    loopFlag=1
+    invalidSerialNumberFlag=1
+  fi  
+  
+  while [[ 0 != $invalidSerialNumberFlag ]]; do
+    read -rp "Invalid Serial Number.  Try again? (Y/N): " yesNo
+    if [[ "$yesNo" == "y" || "$yesNo" == "Y" ]]; then 
+      invalidSerialNumberFlag=0
+    elif [[ "$yesNo" == "n" || "$yesNo" == "N" ]]; then 
+      exit
+    fi
+  done
+
+done
+
+
+########################################################################
+# Create Log File Serial Number
+########################################################################
+
+currentDateTime=$(date -u "+%F-%H-%M-%S")
+logFileName="$serialNumber-$currentDateTime"
+#logFileName="$serialNumber"
+logFileName="${logFileName/ /_}"
+
+
+########################################################################
+# Display & Log Enable/Operation Variables
+########################################################################
+
+echoE " "
+echo -e  "$outline$PHULLSTRING"
+doAppend "!Test Enable/Operation Variables "
+logFileImage="$logFileImage\nTest Enable/Operation Variables "
+
+echoE " "
+echoE "doLEDCheck=$doLEDCheck"
+echoE "doFirmwareLoad=$doFirmwareLoad"
+echoE "doToolheadTemperatureCheck=$doToolheadTemperatureCheck"
+echoE "doThermoTemperatureCheck=$doThermoTemperatureCheck"
+echoE "doDSensorCheck=$doDSensorCheck"
+echoE "doNeoPixelCheck=$doNeoPixelCheck"
+echoE "doIndStopCheck=$doIndStopCheck"
+echoE "doBLTouchCheck=$doBLTouchCheck"
+echoE "doSPICheck=$doSPICheck"
+echoE "doHeaterCheck=$doHeaterCheck"
+echoE "doFanCheck=$doFanCheck"
+echoE "doStepperCheck=$doStepperCheck"
+echoE "sealingFlag=$sealingFlag"
+echoE "readDlay=$readDlay"
+echoE "pingHost=\"$pingHost\""
+echoE "pingHostResponse=\"$pingHostResponse\""
+
+
+testNum=0
 
 ########################################################################
 # Ping Test/Moved to start of tests as primary requirement
@@ -698,7 +771,8 @@ if echo "$pingRESPONSE" | grep -q "$pingHostResponse"; then
   echoE   "TEST$testNumString: Ping Test Complete"
 else
   echoE " "
-  drawError "TEST$testNumString: Ping" "No Response"
+  echoE "$pingRESPONSE"
+  drawError "TEST$testNumString: Ping" "Invalid Response"
 fi
 
 if [[ 0 != $doHeaterCheck ]]; then
@@ -799,26 +873,28 @@ if [[ 0 != $doLEDCheck ]]; then
     echoE " "
     drawError "TEST$testNumString: Power LED Active Check" "LED Not Lit"
   fi
-
+  
+  if [[ 0 != $doFirmwareLoad ]]; then
 ########################################################################
-# Check DFU LED Lit
+# Check DFU LED Flashing/Only when Loading MCU Firmware
 ########################################################################
-  testNum=$((testNum + 1))
-  testNumString=$(makeTestNUMString "$testNum")
+    testNum=$((testNum + 1))
+    testNumString=$(makeTestNUMString "$testNum")
 
-  echoE " "
-  Yn=$(checkLED "$testNumString" "Katapult")
+    echoE " "
+    Yn=$(checkLED "$testNumString" "Katapult")
 
-  if [[ "T" == "$Yn" ]]; then
-    echoE " "
-    drawError "TEST$testNumString: DFU LED Flashing" "Input Timeout"
-  elif [[ "Y" == "$Yn" ]]; then
-    echoE " "
-    echoE   "TEST$testNumString: "
-    echoE " "
-  else
-    echoE " "
-    drawError "TEST$testNumString: DFU LED Active Check" "LED Not Lit/Flashing"
+    if [[ "T" == "$Yn" ]]; then
+      echoE " "
+      drawError "TEST$testNumString: DFU LED Flashing" "Input Timeout"
+    elif [[ "Y" == "$Yn" ]]; then
+      echoE " "
+      echoE   "TEST$testNumString: "
+      echoE " "
+    else
+      echoE " "
+      drawError "TEST$testNumString: DFU LED Active Check" "LED Not Lit/Flashing"
+    fi
   fi
 
 ########################################################################
@@ -1760,6 +1836,8 @@ else
   drawPASS   
 fi
 
-echo -e "$logFileImage" > ~/logs/$logFileName
+passString="-PASS"
+logFileName="$logFileName$passString"
+echo -e "$logFileImage" >> ~/logs/$logFileName
 
 exit
